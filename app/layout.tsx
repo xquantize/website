@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SmoothScroll } from "@/components/providers/smooth-scroll";
 
 export const metadata: Metadata = {
-  title: "Zane Neave",
-  description: "Machine learning engineer & software developer.",
+  title: "Zane Neave — ML & Autonomy Specialist",
+  description:
+    "ML and autonomy specialist. Perception systems, LLMs, and multi-domain UXV autonomy stacks. Open to contracting.",
 };
 
 export default function RootLayout({
@@ -25,7 +27,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <SmoothScroll>{children}</SmoothScroll>
+      </body>
     </html>
   );
 }

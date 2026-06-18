@@ -1,15 +1,17 @@
 "use client";
 
+import { SITE } from "@/lib/content";
+
 export function HeroOverlay() {
   return (
     <div className="overlay">
       {/* Top bar */}
       <div className="flex justify-between items-start w-full animate-fade-up">
         <span className="text-sm font-medium tracking-wide">
-          ZANE&nbsp;NEAVE
+          {SITE.name.split(" ").join("\u00a0").toUpperCase()}
         </span>
         <span className="font-mono text-[0.7rem] tracking-[0.15em] uppercase opacity-55">
-          ML Engineer &amp; Developer
+          {SITE.title}
         </span>
       </div>
 
@@ -36,7 +38,7 @@ export function HeroOverlay() {
         style={{ animationDelay: "0.8s" }}
       >
         <span className="font-mono text-[0.7rem] tracking-[0.15em] uppercase opacity-55">
-          Available for select work
+          {SITE.availability}
         </span>
         <div className="flex items-center gap-3 font-mono text-[0.7rem] tracking-[0.15em] uppercase opacity-55">
           <span>Scroll</span>

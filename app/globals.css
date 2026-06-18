@@ -193,3 +193,130 @@
   background: rgba(245, 240, 232, 0.2);
   margin-bottom: 2rem;
 }
+
+/* ---- Navigation ---- */
+
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2.5rem;
+  pointer-events: none;
+}
+
+.site-nav__brand {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+.site-nav__brand:hover {
+  opacity: 1;
+}
+
+.site-nav__links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.site-nav__links a {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.45;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+.site-nav__links a:hover,
+.site-nav__links a.is-active {
+  opacity: 1;
+}
+
+/* ---- Links ---- */
+
+.site-link {
+  opacity: 0.55;
+  transition: opacity 0.4s ease;
+}
+
+.site-link:hover {
+  opacity: 1;
+}
+
+/* ---- Project cards ---- */
+
+.project-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 2.5rem;
+  }
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.project-card__visual {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 2px;
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+.project-card__index {
+  position: absolute;
+  bottom: 1rem;
+  left: 1.25rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  opacity: 0.6;
+}
+
+.project-card__title {
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+
+.project-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  list-style: none;
+  margin-top: 1rem;
+  opacity: 0.4;
+}
+
+/* ---- Touch devices ---- */
+
+@media (hover: none) {
+  html,
+  body {
+    cursor: auto;
+  }
+
+  .cursor-ring,
+  .cursor-dot {
+    display: none;
+  }
+}
