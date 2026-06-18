@@ -11,7 +11,7 @@
   body {
     width: 100%;
     min-height: 100%;
-    background: #0a0e1a;
+    background: #081420;
     color: #f5f0e8;
     cursor: none;
     font-family:
@@ -19,6 +19,30 @@
       -apple-system,
       system-ui,
       sans-serif;
+  }
+}
+
+/* ---- Water background ---- */
+
+.water-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -5%, rgba(55, 140, 160, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 45% at 15% 85%, rgba(35, 90, 120, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 45% 40% at 85% 70%, rgba(40, 100, 130, 0.2) 0%, transparent 50%),
+    linear-gradient(180deg, #0c2a3a 0%, #081420 45%, #050c14 100%);
+  animation: water-shift 24s ease-in-out infinite alternate;
+}
+
+@keyframes water-shift {
+  0% {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  100% {
+    filter: hue-rotate(8deg) brightness(1.05);
   }
 }
 
@@ -38,9 +62,10 @@
   z-index: 5;
   pointer-events: none;
   background: radial-gradient(
-    ellipse at center,
-    transparent 35%,
-    rgba(10, 14, 26, 0.85) 100%
+    ellipse 80% 70% at 50% 45%,
+    transparent 30%,
+    rgba(5, 12, 20, 0.5) 70%,
+    rgba(5, 12, 20, 0.88) 100%
   );
 }
 

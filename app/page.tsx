@@ -6,6 +6,7 @@ export default function Home() {
   return (
     <>
       {/* Fixed background layers */}
+      <div className="water-bg" aria-hidden="true" />
       <div className="canvas-container">
         <HeroScene />
       </div>

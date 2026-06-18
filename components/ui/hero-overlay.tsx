@@ -24,7 +24,7 @@ export function HeroOverlay() {
         >
           building
           <br />
-          <em className="text-[#ff8b73]">intelligent</em>
+          <em className="text-[#7dd3c0]">intelligent</em>
           <br />
           systems.
         </h1>

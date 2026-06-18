@@ -1,7 +1,7 @@
 export const COLORS = {
-  bg: "#0a0e1a",
+  bg: "#081420",
   text: "#f5f0e8",
-  coral: "#ff8b73",
+  accent: "#7dd3c0",
   seafoam: "#7dd3c0",
 } as const;
 
