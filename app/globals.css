@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    background: #0a0e1a;
+    color: #f5f0e8;
+    cursor: none;
+    font-family:
+      "Inter",
+      -apple-system,
+      system-ui,
+      sans-serif;
+  }
+}
+
+/* ---- Canvas ---- */
+
+.canvas-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* ---- Atmosphere ---- */
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    rgba(10, 14, 26, 0.85) 100%
+  );
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- Overlay ---- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 10;
+  pointer-events: none;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ---- Cursor ---- */
+
+.cursor-ring {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(245, 240, 232, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  mix-blend-mode: difference;
+}
+
+.cursor-dot {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background: #f5f0e8;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 101;
+  transform: translate(-50%, -50%);
+}
+
+/* ---- Typography ---- */
+
+.font-serif {
+  font-family: "Cormorant Garamond", Georgia, serif;
+}
+
+.font-mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ---- Animations ---- */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-line {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scaleX(0.3);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scaleX(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 1.2s ease-out both;
+}
+
+.animate-pulse-line {
+  transform-origin: left;
+  animation: pulse-line 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+/* ---- Scroll sections ---- */
+
+.scroll-content {
+  position: relative;
+  z-index: 10;
+}
+
+.hero-section {
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  pointer-events: none;
+}
+
+.content-section {
+  position: relative;
+  min-height: 100vh;
+  padding: 8rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.section-divider {
+  width: 48px;
+  height: 1px;
+  background: rgba(245, 240, 232, 0.2);
+  margin-bottom: 2rem;
+}
