@@ -320,3 +320,39 @@
     display: none;
   }
 }
+
+/* ---- Playground sliders ---- */
+
+.playground-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1px;
+  background: rgba(245, 240, 232, 0.2);
+  outline: none;
+  cursor: none;
+}
+
+.playground-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: #f5f0e8;
+  border-radius: 50%;
+  cursor: none;
+  transition: transform 0.2s ease;
+}
+
+.playground-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.4);
+}
+
+.playground-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: #f5f0e8;
+  border-radius: 50%;
+  border: none;
+  cursor: none;
+}
