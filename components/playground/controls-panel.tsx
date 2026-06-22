@@ -8,13 +8,17 @@ type Props = {
   activation: Activation;
   learningRate: number;
   datasetKind: DatasetKind;
+  speed: number;
+  speeds: readonly number[];
   running: boolean;
   step: number;
   loss: number;
+  accuracy: number;
   onHiddenSizes: (s: number[]) => void;
   onActivation: (a: Activation) => void;
   onLearningRate: (lr: number) => void;
   onDatasetKind: (k: DatasetKind) => void;
+  onSpeed: (speed: number) => void;
   onPlayPause: () => void;
   onReset: () => void;
   onStep: () => void;
@@ -23,11 +27,25 @@ type Props = {
 const DATASETS: DatasetKind[] = ["xor", "circle", "gaussian", "spiral"];
 const ACTIVATIONS: Activation[] = ["tanh", "relu", "sigmoid"];
 
-const labelCls =
-  "font-mono text-[0.65rem] tracking-[0.15em] uppercase opacity-40";
-const valueCls = "font-mono text-[0.75rem] opacity-75";
-const btnCls =
-  "font-mono text-[0.7rem] tracking-[0.15em] uppercase site-link pointer-events-auto";
+function LabOption({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`lab-option pointer-events-auto${active ? " is-active" : ""}`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function ControlsPanel(p: Props) {
   const setLayerCount = (n: number) => {
@@ -44,121 +62,143 @@ export function ControlsPanel(p: Props) {
   };
 
   return (
-    <div className="playground-controls">
-      <div className="playground-controls__wide playground-controls__metrics">
-        <div className="flex justify-between items-baseline">
-          <span className={labelCls}>step</span>
-          <span className={valueCls}>
+    <div className="lab-controls">
+      <div className="lab-bar">
+        <div className="lab-bar__stats font-mono">
+          <span>
+            <span className="lab-bar__label">step</span>
             {p.step.toString().padStart(5, "0")}
           </span>
+          <span>
+            <span className="lab-bar__label">acc</span>
+            {(p.accuracy * 100).toFixed(0)}%
+          </span>
+          <span>
+            <span className="lab-bar__label">loss</span>
+            {p.loss.toFixed(4)}
+          </span>
         </div>
-        <div className="flex justify-between items-baseline">
-          <span className={labelCls}>loss</span>
-          <span className={valueCls}>{p.loss.toFixed(4)}</span>
+
+        <div className="lab-bar__actions">
+          <button
+            type="button"
+            onClick={p.onPlayPause}
+            className="lab-btn lab-btn--primary pointer-events-auto"
+          >
+            {p.running ? "Pause" : "Play"}
+          </button>
+          <button
+            type="button"
+            onClick={p.onStep}
+            disabled={p.running}
+            className="lab-btn pointer-events-auto"
+          >
+            Step
+          </button>
+          <button type="button" onClick={p.onReset} className="lab-btn pointer-events-auto">
+            Reset
+          </button>
         </div>
       </div>
 
-      <div className="playground-controls__wide playground-controls__actions">
-        <button onClick={p.onPlayPause} className={btnCls}>
-          {p.running ? "pause" : "play"}
-        </button>
-        <button
-          onClick={p.onStep}
-          disabled={p.running}
-          className={btnCls}
-          style={{ opacity: p.running ? 0.2 : undefined }}
-        >
-          step
-        </button>
-        <button onClick={p.onReset} className={btnCls}>
-          reset
-        </button>
+      <div className="lab-field">
+        <span className="lab-field__label font-mono">Speed</span>
+        <div className="lab-options">
+          {p.speeds.map((s) => (
+            <LabOption key={s} active={s === p.speed} onClick={() => p.onSpeed(s)}>
+              {s}×
+            </LabOption>
+          ))}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <span className={labelCls}>dataset</span>
-        <div className="flex flex-wrap gap-x-4 gap-y-2">
+      <div className="lab-field">
+        <span className="lab-field__label font-mono">Dataset</span>
+        <div className="lab-options">
           {DATASETS.map((d) => (
-            <button
+            <LabOption
               key={d}
+              active={d === p.datasetKind}
               onClick={() => p.onDatasetKind(d)}
-              className="font-mono text-[0.7rem] tracking-[0.1em] uppercase pointer-events-auto transition-opacity"
-              style={{ opacity: d === p.datasetKind ? 1 : 0.35 }}
             >
               {d}
-            </button>
+            </LabOption>
           ))}
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <span className={labelCls}>activation</span>
-        <div className="flex gap-4">
-          {ACTIVATIONS.map((a) => (
-            <button
-              key={a}
-              onClick={() => p.onActivation(a)}
-              className="font-mono text-[0.7rem] tracking-[0.1em] uppercase pointer-events-auto"
-              style={{ opacity: a === p.activation ? 1 : 0.35 }}
-            >
-              {a}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-between">
-          <span className={labelCls}>hidden layers</span>
-          <span className={valueCls}>{p.hiddenSizes.length}</span>
-        </div>
-        <div className="flex gap-3">
-          {[1, 2, 3].map((n) => (
-            <button
-              key={n}
-              onClick={() => setLayerCount(n)}
-              className="font-mono text-[0.75rem] pointer-events-auto"
-              style={{ opacity: p.hiddenSizes.length === n ? 1 : 0.35 }}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-        {p.hiddenSizes.map((size, i) => (
-          <div key={i} className="flex flex-col gap-1.5 mt-1">
-            <div className="flex justify-between">
-              <span className={labelCls}>layer {i + 1}</span>
-              <span className={valueCls}>{size} neurons</span>
+      <details className="lab-architecture pointer-events-auto">
+        <summary className="lab-architecture__summary font-mono">Architecture</summary>
+        <div className="lab-architecture__body">
+          <div className="lab-field">
+            <span className="lab-field__label font-mono">Activation</span>
+            <div className="lab-options">
+              {ACTIVATIONS.map((a) => (
+                <LabOption
+                  key={a}
+                  active={a === p.activation}
+                  onClick={() => p.onActivation(a)}
+                >
+                  {a}
+                </LabOption>
+              ))}
             </div>
-            <input
-              type="range"
-              min={2}
-              max={8}
-              value={size}
-              onChange={(e) => setNeurons(i, parseInt(e.target.value))}
-              className="playground-slider pointer-events-auto"
-            />
           </div>
-        ))}
-      </div>
 
-      <div className="playground-controls__wide">
-        <div className="flex justify-between">
-          <span className={labelCls}>learning rate</span>
-          <span className={valueCls}>{p.learningRate.toFixed(3)}</span>
+          <div className="lab-field">
+            <div className="lab-field__head">
+              <span className="lab-field__label font-mono">Hidden layers</span>
+              <div className="lab-options lab-options--compact">
+                {[1, 2, 3].map((n) => (
+                  <LabOption
+                    key={n}
+                    active={p.hiddenSizes.length === n}
+                    onClick={() => setLayerCount(n)}
+                  >
+                    {n}
+                  </LabOption>
+                ))}
+              </div>
+            </div>
+            {p.hiddenSizes.map((size, i) => (
+              <div key={i} className="lab-slider-row">
+                <div className="lab-slider-row__head">
+                  <span className="lab-field__label font-mono">Layer {i + 1}</span>
+                  <span className="lab-slider-row__value font-mono">{size}</span>
+                </div>
+                <input
+                  type="range"
+                  min={2}
+                  max={8}
+                  value={size}
+                  onChange={(e) => setNeurons(i, parseInt(e.target.value))}
+                  className="lab-slider pointer-events-auto"
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="lab-field">
+            <div className="lab-slider-row">
+              <div className="lab-slider-row__head">
+                <span className="lab-field__label font-mono">Learning rate</span>
+                <span className="lab-slider-row__value font-mono">
+                  {p.learningRate.toFixed(3)}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={-3}
+                max={0}
+                step={0.05}
+                value={Math.log10(p.learningRate)}
+                onChange={(e) => p.onLearningRate(10 ** parseFloat(e.target.value))}
+                className="lab-slider pointer-events-auto"
+              />
+            </div>
+          </div>
         </div>
-        <input
-          type="range"
-          min={-3}
-          max={0}
-          step={0.05}
-          value={Math.log10(p.learningRate)}
-          onChange={(e) =>
-            p.onLearningRate(10 ** parseFloat(e.target.value))
-          }
-          className="playground-slider pointer-events-auto"
-        />
-      </div>
+      </details>
     </div>
   );
 }
