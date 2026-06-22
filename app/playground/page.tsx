@@ -1,11 +1,5 @@
-"use client";
-
-import { useEffect } from "react";
+import { redirect } from "next/navigation";
 
 export default function PlaygroundRedirect() {
-  useEffect(() => {
-    window.location.replace("/#work-01");
-  }, []);
-
-  return null;
+  redirect("/work/autograd-playground");
 }

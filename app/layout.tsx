@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
+import { AppChrome } from "@/components/providers/app-chrome";
 
 export const metadata: Metadata = {
   title: "Zane Neave — ML & Autonomy Specialist",
@@ -29,6 +30,7 @@ export default function RootLayout({
       </head>
       <body>
         <SmoothScroll>{children}</SmoothScroll>
+        <AppChrome />
       </body>
     </html>
   );
