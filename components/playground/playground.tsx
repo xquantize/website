@@ -28,8 +28,8 @@ export function Playground() {
   });
 
   return (
-    <div className="grid md:grid-cols-[480px_1fr] gap-16 items-start">
-      <div className="flex flex-col gap-4">
+    <div className="playground">
+      <div className="playground__visual">
         <DecisionBoundary
           predict={trainer.predict}
           samples={dataset}

@@ -44,8 +44,8 @@ export function ControlsPanel(p: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-10 max-w-xs">
-      <div className="flex flex-col gap-2">
+    <div className="playground-controls">
+      <div className="playground-controls__wide playground-controls__metrics">
         <div className="flex justify-between items-baseline">
           <span className={labelCls}>step</span>
           <span className={valueCls}>
@@ -58,7 +58,7 @@ export function ControlsPanel(p: Props) {
         </div>
       </div>
 
-      <div className="flex gap-5">
+      <div className="playground-controls__wide playground-controls__actions">
         <button onClick={p.onPlayPause} className={btnCls}>
           {p.running ? "pause" : "play"}
         </button>
@@ -142,7 +142,7 @@ export function ControlsPanel(p: Props) {
         ))}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="playground-controls__wide">
         <div className="flex justify-between">
           <span className={labelCls}>learning rate</span>
           <span className={valueCls}>{p.learningRate.toFixed(3)}</span>

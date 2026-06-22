@@ -1,10 +1,9 @@
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
-import { ProjectCard } from "@/components/ui/project-card";
-import { PROJECTS } from "@/lib/content";
+import { ProjectExplorer } from "@/components/sections/project-explorer";
 
 export function WorkSection() {
   return (
-    <section id="work" className="content-section">
+    <section id="work" className="content-section content-section--work">
       <div className="max-w-5xl w-full">
         <ScrollReveal>
           <div className="section-divider" />
@@ -19,13 +18,9 @@ export function WorkSection() {
           </h2>
         </ScrollReveal>
 
-        <div className="project-grid">
-          {PROJECTS.map((project, i) => (
-            <ScrollReveal key={project.id} delay={i * 0.08}>
-              <ProjectCard project={project} />
-            </ScrollReveal>
-          ))}
-        </div>
+        <ScrollReveal delay={0.1}>
+          <ProjectExplorer />
+        </ScrollReveal>
       </div>
     </section>
   );
