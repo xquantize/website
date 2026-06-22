@@ -16,7 +16,8 @@ export function ContactSection() {
           Let&apos;s talk.
         </h2>
         <p className="text-sm opacity-50 leading-relaxed max-w-md mb-10">
-          {SITE.availability}. Reach out via email or send a message on LinkedIn.
+          {SITE.availability}. Reach out by email or on LinkedIn — happy to talk
+          about contracting, research, or autonomy work.
         </p>
         <div className="flex flex-col gap-4">
           <a

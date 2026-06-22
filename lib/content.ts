@@ -6,17 +6,19 @@ export const SITE = {
   linkedin: "https://www.linkedin.com/in/zane-neave-rex",
   orcid: "https://orcid.org/0009-0005-1559-1426",
   availability: "Open to contracting",
+  accent: "#7dd3c0",
   bio: [
     "ML and autonomy specialist with deep experience in perception systems and large language models.",
     "I've designed and built autonomy stacks for multi-UXV, multi-domain vehicles — spanning air, surface, and sub-surface platforms.",
     "Disciplined engineering meets research-driven iteration. I care about systems that ship, not just demos.",
+    "The scalar autograd playground runs entirely in your browser — forward pass, backprop, and a live decision boundary with no framework behind it.",
   ],
 } as const;
 
 export const NAV = [
-  { label: "Work", href: "#work" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Work", href: "/#work" },
+  { label: "About", href: "/#about" },
+  { label: "Contact", href: "/#contact" },
 ] as const;
 
 export type ProjectKind = "playground" | "static";
@@ -25,56 +27,42 @@ export type Project = {
   id: string;
   slug: string;
   title: string;
+  hook: string;
   description: string;
+  intro?: string;
+  problem?: string;
   tags: string[];
   status: string;
-  gradient: string;
+  accent: string;
   kind: ProjectKind;
 };
 
 export const PROJECTS: Project[] = [
   {
     id: "01",
-    slug: "01",
+    slug: "autograd-playground",
     title: "Scalar Autograd Playground",
+    hook: "Gradients, rendered.",
     description:
-      "Hand-rolled scalar autograd, an MLP a few neurons wide, trained in your browser. No framework, no server — watch the decision boundary form as gradients flow.",
+      "Hand-rolled scalar autograd and a live MLP — no PyTorch, no server. Train a tiny classifier in the browser and watch the decision boundary move step by step.",
+    intro:
+      "Each step is a full forward pass, hinge loss, and manual backprop through a configurable MLP. Hover the boundary to probe the network — edge thickness tracks weight magnitude, and gradients pulse while training.",
     tags: ["Autograd", "ML", "Browser"],
     status: "Live",
+    accent: "#7dd3c0",
     kind: "playground",
-    gradient: "linear-gradient(135deg, #0e3a4a 0%, #1a6080 50%, #7dd3c0 100%)",
-  },
-  {
-    id: "02",
-    slug: "02",
-    title: "Fleet Perception Pipeline",
-    description:
-      "Real-time sensor fusion and object tracking for coordinated multi-vehicle operations.",
-    tags: ["Computer Vision", "PyTorch", "Sensor Fusion"],
-    status: "Coming soon",
-    kind: "static",
-    gradient: "linear-gradient(135deg, #081420 0%, #2a5080 55%, #5ec4b8 100%)",
-  },
-  {
-    id: "03",
-    slug: "03",
-    title: "LLM-Assisted Mission Planning",
-    description:
-      "Natural language interfaces for autonomous mission authoring, validation, and execution.",
-    tags: ["LLMs", "Python", "FastAPI"],
-    status: "Coming soon",
-    kind: "static",
-    gradient: "linear-gradient(135deg, #0a1830 0%, #3a2870 50%, #88c0e0 100%)",
-  },
-  {
-    id: "04",
-    slug: "04",
-    title: "Cross-Domain UXV Coordination",
-    description:
-      "Distributed decision-making and state sharing for multi-agent autonomous systems.",
-    tags: ["Multi-Agent", "Research", "Robotics"],
-    status: "Coming soon",
-    kind: "static",
-    gradient: "linear-gradient(135deg, #051018 0%, #1a4555 45%, #6aabcc 100%)",
   },
 ];
+
+export function getProjectBySlug(slug: string): Project | undefined {
+  return PROJECTS.find((p) => p.slug === slug);
+}
+
+export function getAdjacentProjects(slug: string) {
+  const index = PROJECTS.findIndex((p) => p.slug === slug);
+  if (index === -1) return { prev: null, next: null };
+  return {
+    prev: index > 0 ? PROJECTS[index - 1] : null,
+    next: index < PROJECTS.length - 1 ? PROJECTS[index + 1] : null,
+  };
+}

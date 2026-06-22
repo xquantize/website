@@ -3,11 +3,20 @@
 import { useEffect, useState } from "react";
 import { NAV, SITE } from "@/lib/content";
 
+function sectionHash(href: string) {
+  const hash = href.split("#")[1];
+  return hash ? `#${hash}` : href;
+}
+
 export function SiteNav() {
-  const [active, setActive] = useState<string>("");
+  const [active, setActive] = useState("");
 
   useEffect(() => {
-    const sections = NAV.map((item) => document.querySelector(item.href)).filter(Boolean);
+    const sections = NAV.map((item) => document.querySelector(sectionHash(item.href))).filter(
+      Boolean,
+    );
+
+    if (sections.length === 0) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -27,7 +36,7 @@ export function SiteNav() {
 
   return (
     <nav className="site-nav" aria-label="Main">
-      <a href="#" className="site-nav__brand">
+      <a href="/" className="site-nav__brand pointer-events-auto">
         {SITE.name.split(" ")[0]}
       </a>
       <ul className="site-nav__links">
@@ -35,7 +44,7 @@ export function SiteNav() {
           <li key={item.href}>
             <a
               href={item.href}
-              className={active === item.href ? "is-active" : undefined}
+              className={active === sectionHash(item.href) ? "is-active" : undefined}
             >
               {item.label}
             </a>

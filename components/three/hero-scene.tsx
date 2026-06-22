@@ -1,10 +1,11 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { EffectComposer } from "@react-three/postprocessing";
 import { SCENE } from "@/lib/constants";
 import { ParticleField } from "./particle-field";
 import { SceneCamera } from "./scene-camera";
+import { AtmosphereBloom } from "./atmosphere-bloom";
 
 export function HeroScene() {
   return (
@@ -18,12 +19,7 @@ export function HeroScene() {
       <SceneCamera />
 
       <EffectComposer>
-        <Bloom
-          intensity={0.4}
-          luminanceThreshold={0.1}
-          luminanceSmoothing={0.9}
-          mipmapBlur
-        />
+        <AtmosphereBloom />
       </EffectComposer>
     </Canvas>
   );

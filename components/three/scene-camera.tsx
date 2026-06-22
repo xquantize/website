@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { SCENE } from "@/lib/constants";
+import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 
 export function SceneCamera() {
   const mouse = useRef({ x: 0, y: 0 });
@@ -18,8 +19,11 @@ export function SceneCamera() {
   }, []);
 
   useFrame(() => {
-    camera.position.x += (mouse.current.x * SCENE.parallaxStrength.x - camera.position.x) * 0.04;
-    camera.position.y += (-mouse.current.y * SCENE.parallaxStrength.y - camera.position.y) * 0.04;
+    camera.position.x +=
+      (mouse.current.x * SCENE.parallaxStrength.x - camera.position.x) * 0.04;
+    camera.position.y +=
+      (-mouse.current.y * SCENE.parallaxStrength.y - camera.position.y) * 0.04;
+    camera.position.z += (scrollAtmosphere.cameraZ - camera.position.z) * 0.06;
     camera.lookAt(0, 0, 0);
   });
 

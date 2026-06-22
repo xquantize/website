@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { COLORS } from "@/lib/constants";
+import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
@@ -13,6 +14,7 @@ function seededRandom(seed: number): number {
 
 function DriftParticles() {
   const ref = useRef<THREE.Points>(null);
+  const materialRef = useRef<THREE.PointsMaterial>(null);
   const count = 320;
 
   const { positions, speeds, phases } = useMemo(() => {
@@ -31,15 +33,20 @@ function DriftParticles() {
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
+    const speedMul = scrollAtmosphere.particleSpeed;
     const arr = (ref.current.geometry.attributes.position as THREE.BufferAttribute)
       .array as Float32Array;
     const t = clock.getElapsedTime();
     for (let i = 0; i < count; i++) {
-      arr[i * 3 + 1] += speeds[i] * 0.012;
-      arr[i * 3 + 0] += Math.sin(t * 0.1 + phases[i]) * 0.0015;
+      arr[i * 3 + 1] += speeds[i] * 0.012 * speedMul;
+      arr[i * 3 + 0] += Math.sin(t * 0.1 + phases[i]) * 0.0015 * speedMul;
       if (arr[i * 3 + 1] > 10) arr[i * 3 + 1] = -10;
     }
     ref.current.geometry.attributes.position.needsUpdate = true;
+
+    if (materialRef.current) {
+      materialRef.current.opacity = scrollAtmosphere.particleOpacity;
+    }
   });
 
   return (
@@ -48,6 +55,7 @@ function DriftParticles() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
+        ref={materialRef}
         color="#b8ecf4"
         size={0.022}
         transparent
@@ -60,18 +68,35 @@ function DriftParticles() {
   );
 }
 
+function ScrollSparkles() {
+  const [opacity, setOpacity] = useState(0.35);
+  const [speed, setSpeed] = useState(0.12);
+  const lastUpdate = useRef(0);
+
+  useFrame(({ clock }) => {
+    if (clock.elapsedTime - lastUpdate.current < 0.05) return;
+    lastUpdate.current = clock.elapsedTime;
+    setOpacity(scrollAtmosphere.particleOpacity * 0.65);
+    setSpeed(0.12 * scrollAtmosphere.particleSpeed);
+  });
+
+  return (
+    <Sparkles
+      count={80}
+      scale={[22, 16, 6]}
+      size={1.5}
+      speed={speed}
+      opacity={opacity}
+      color={COLORS.seafoam}
+    />
+  );
+}
+
 export function ParticleField() {
   return (
     <>
       <DriftParticles />
-      <Sparkles
-        count={80}
-        scale={[22, 16, 6]}
-        size={1.5}
-        speed={0.12}
-        opacity={0.35}
-        color={COLORS.seafoam}
-      />
+      <ScrollSparkles />
     </>
   );
 }

@@ -59,6 +59,33 @@ export class MLP {
     for (const layer of this.layers) v = layer.forward(v);
     return v[0];
   }
+
+  forwardTrace(x: number[]): { output: Value; activations: number[][] } {
+    let v: Value[] = x.map((xi) => new Value(xi));
+    const activations: number[][] = [v.map((n) => n.data)];
+    for (const layer of this.layers) {
+      v = layer.forward(v);
+      activations.push(v.map((n) => n.data));
+    }
+    return { output: v[0], activations };
+  }
+
+  exportWeights(): number[][][] {
+    return this.layers.map((layer) =>
+      layer.neurons.map((neuron) => neuron.w.map((w) => w.data)),
+    );
+  }
+
+  exportWeightGrads(): number[][][] {
+    return this.layers.map((layer) =>
+      layer.neurons.map((neuron) => neuron.w.map((w) => Math.abs(w.grad))),
+    );
+  }
+
+  exportBiasGrads(): number[][] {
+    return this.layers.map((layer) => layer.neurons.map((neuron) => Math.abs(neuron.b.grad)));
+  }
+
   parameters(): Value[] {
     return this.layers.flatMap((l) => l.parameters());
   }

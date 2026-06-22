@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SiteShell } from "@/components/layout/site-shell";
 import { ProjectPageContent } from "@/components/work/project-page-content";
-import { getProjectBySlug, PROJECTS, SITE } from "@/lib/content";
+import { getProjectBySlug, PROJECTS } from "@/lib/content";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -15,9 +15,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = getProjectBySlug(slug);
   if (!project) return { title: "Not found" };
 
+  const title = project.title;
+  const description = project.description;
+  const path = `/work/${project.slug}`;
+
   return {
-    title: `${project.title} — ${SITE.name}`,
-    description: project.description,
+    title,
+    description,
+    openGraph: {
+      title: `${project.hook} · ${project.title}`,
+      description,
+      type: "website",
+      url: path,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${project.hook} · ${project.title}`,
+      description,
+    },
   };
 }
 
@@ -27,7 +42,7 @@ export default async function WorkProjectPage({ params }: Props) {
   if (!project) notFound();
 
   return (
-    <SiteShell>
+    <SiteShell scene="static">
       <ProjectPageContent project={project} />
     </SiteShell>
   );

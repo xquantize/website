@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zane Neave — Portfolio
 
-## Getting Started
+Personal site and interactive work demos. Built with Next.js 16, hand-rolled browser ML (scalar autograd playground), and a Three.js scroll atmosphere on the homepage.
 
-First, run the development server:
+## Develop
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command        | Description              |
+| -------------- | ------------------------ |
+| `npm run dev`  | Local dev server         |
+| `npm run build`| Production build         |
+| `npm run start`| Serve production build   |
+| `npm run lint` | ESLint                   |
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+Copy `.env.example` to `.env.local` for local overrides:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cp .env.example .env.local
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable               | Required | Description                                      |
+| ---------------------- | -------- | ------------------------------------------------ |
+| `NEXT_PUBLIC_SITE_URL` | Deploy   | Canonical site URL for OG, sitemap, and robots   |
 
-## Deploy on Vercel
+Example:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Without this, metadata falls back to `http://localhost:3000` locally or your Vercel preview URL in preview deploys.
+
+## Deploy (Vercel)
+
+1. Import the repo in [Vercel](https://vercel.com).
+2. Set **`NEXT_PUBLIC_SITE_URL`** to your production domain (e.g. `https://zane-neave.com`).
+3. Deploy — Next.js app router; no extra config required.
+4. After deploy, verify:
+   - `/` — homepage
+   - `/work/autograd-playground` — live demo
+   - `/sitemap.xml` — sitemap
+   - `/robots.txt` — robots
+   - Paste your URL into an OG debugger to confirm social previews
+
+## Structure
+
+```
+app/                    Routes, layout, OG images, sitemap
+components/
+  playground/           Autograd demo UI
+  sections/             Homepage sections
+  work/                 Project sub-pages
+lib/
+  content.ts            Site copy and project data
+  playground/           Autograd, MLP, trainer
+```
+
+## Content
+
+Edit site copy and projects in `lib/content.ts`. Project pages are generated from `PROJECTS` at `/work/[slug]`.

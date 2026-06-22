@@ -1,11 +1,13 @@
 "use client";
 
-import { SITE } from "@/lib/content";
+import Link from "next/link";
+import { PROJECTS, SITE } from "@/lib/content";
+
+const featured = PROJECTS[0];
 
 export function HeroOverlay() {
   return (
     <div className="overlay">
-      {/* Top bar */}
       <div className="flex justify-between items-start w-full animate-fade-up">
         <span className="text-sm font-medium tracking-wide">
           {SITE.name.split(" ").join("\u00a0").toUpperCase()}
@@ -15,7 +17,6 @@ export function HeroOverlay() {
         </span>
       </div>
 
-      {/* Hero text */}
       <div>
         <h1
           className="font-serif italic font-light leading-[0.95] tracking-tight max-w-[14ch] animate-fade-up"
@@ -26,13 +27,22 @@ export function HeroOverlay() {
         >
           building
           <br />
-          <em className="text-[#7dd3c0]">intelligent</em>
+          <em className="hero-accent">intelligent</em>
           <br />
           systems.
         </h1>
+
+        {featured && (
+          <Link
+            href={`/work/${featured.slug}`}
+            className="hero-cta font-mono pointer-events-auto animate-fade-up"
+            style={{ animationDelay: "0.5s" }}
+          >
+            Try the demo →
+          </Link>
+        )}
       </div>
 
-      {/* Bottom bar */}
       <div
         className="flex justify-between items-end w-full animate-fade-up"
         style={{ animationDelay: "0.8s" }}
@@ -40,10 +50,13 @@ export function HeroOverlay() {
         <span className="font-mono text-[0.7rem] tracking-[0.15em] uppercase opacity-55">
           {SITE.availability}
         </span>
-        <div className="flex items-center gap-3 font-mono text-[0.7rem] tracking-[0.15em] uppercase opacity-55">
+        <a
+          href="/#work"
+          className="hero-scroll font-mono pointer-events-auto"
+        >
           <span>Scroll</span>
-          <div className="w-12 h-px bg-current animate-pulse-line" />
-        </div>
+          <div className="hero-scroll__line" aria-hidden />
+        </a>
       </div>
     </div>
   );
