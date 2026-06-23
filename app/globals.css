@@ -170,6 +170,16 @@
   font-size: clamp(2.75rem, 6.5vw, 5.75rem);
 }
 
+.hero-title__line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero-title__inner {
+  display: block;
+  will-change: transform, opacity;
+}
+
 /* ---- Cursor ---- */
 
 .cursor-ring,
@@ -194,6 +204,23 @@
   border: 1px solid rgba(245, 240, 232, 0.45);
   border-radius: 50%;
   z-index: 9999;
+  transition:
+    width 0.25s ease,
+    height 0.25s ease,
+    border-color 0.25s ease,
+    opacity 0.15s ease;
+}
+
+.cursor-ring[data-mode="link"] {
+  width: 44px;
+  height: 44px;
+  border-color: color-mix(in srgb, var(--site-accent) 70%, rgba(245, 240, 232, 0.45));
+}
+
+.cursor-ring[data-mode="text"] {
+  width: 22px;
+  height: 22px;
+  border-color: rgba(245, 240, 232, 0.28);
 }
 
 .cursor-dot {
@@ -265,6 +292,17 @@
     animation: none;
     opacity: 0.55;
     transform: scaleX(0.65);
+  }
+
+  .route-overlay,
+  .route-overlay--dive,
+  .route-overlay--surface {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .terminal-egg {
+    animation: none;
   }
 }
 
@@ -570,6 +608,247 @@ html.reduce-motion .page-enter {
 
 .page-enter {
   animation: page-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ---- Route transitions ---- */
+
+.route-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 90% 80% at 50% 30%,
+    rgba(125, 211, 192, 0.08) 0%,
+    rgba(5, 16, 28, 0.92) 55%,
+    rgba(2, 8, 16, 0.98) 100%
+  );
+}
+
+.route-overlay--dive {
+  animation: route-dive 0.85s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.route-overlay--surface {
+  animation: route-surface 0.85s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes route-dive {
+  0% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes route-surface {
+  0% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+html.route-lab .water-bg {
+  filter: hue-rotate(6deg) brightness(0.92);
+}
+
+/* ---- Depth indicator ---- */
+
+.depth-indicator {
+  position: fixed;
+  right: clamp(0.75rem, 2vw, 1.5rem);
+  top: 50%;
+  z-index: 45;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.depth-indicator__track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.75rem;
+  padding: 0.25rem 0;
+}
+
+.depth-indicator__track::before {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 1px;
+  background: rgba(245, 240, 232, 0.1);
+}
+
+.depth-indicator__fill {
+  position: absolute;
+  right: 3px;
+  top: 0.35rem;
+  width: 1px;
+  height: calc(100% - 0.7rem);
+  background: linear-gradient(180deg, var(--site-accent), rgba(125, 211, 192, 0.35));
+  transform-origin: top;
+  transform: scaleY(0);
+  opacity: 0.85;
+}
+
+.depth-indicator__mark {
+  position: relative;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.65rem;
+  pointer-events: auto;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.38;
+  transition: opacity 0.3s ease;
+}
+
+.depth-indicator__mark:hover,
+.depth-indicator__mark.is-active {
+  opacity: 0.92;
+}
+
+.depth-indicator__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 240, 232, 0.35);
+  background: rgba(8, 20, 32, 0.6);
+  transition:
+    border-color 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.depth-indicator__mark.is-active .depth-indicator__dot {
+  border-color: var(--site-accent);
+  background: color-mix(in srgb, var(--site-accent) 35%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--site-accent) 45%, transparent);
+}
+
+.depth-indicator__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---- Terminal easter egg ---- */
+
+.terminal-egg {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: terminal-in 0.35s ease both;
+}
+
+.terminal-egg__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(2, 8, 14, 0.72);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.terminal-egg__panel {
+  position: relative;
+  width: min(100%, 32rem);
+  border: 1px solid rgba(125, 211, 192, 0.22);
+  background: rgba(5, 14, 22, 0.94);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.terminal-egg__chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.45;
+  border-bottom: 1px solid rgba(245, 240, 232, 0.08);
+}
+
+.terminal-egg__close {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 0.15rem 0.35rem;
+}
+
+.terminal-egg__close:hover {
+  opacity: 1;
+}
+
+.terminal-egg__body {
+  padding: 1rem 1.1rem 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: rgba(245, 240, 232, 0.82);
+  overflow-x: auto;
+}
+
+.terminal-egg__line {
+  display: block;
+}
+
+.terminal-egg__line:nth-child(4),
+.terminal-egg__line:nth-child(5) {
+  color: #f07178;
+}
+
+.terminal-egg__line:nth-child(7) {
+  color: var(--site-accent);
+  margin-top: 0.35rem;
+}
+
+.terminal-egg__cta {
+  display: inline-block;
+  margin: 0.35rem 1.1rem 1.1rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--site-accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--site-accent) 35%, transparent);
+  padding-bottom: 0.15rem;
+}
+
+.terminal-egg__cta:hover {
+  border-color: var(--site-accent);
+}
+
+@keyframes terminal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes page-enter {
@@ -921,6 +1200,10 @@ html.reduce-motion .page-enter {
   .home-page .content-section {
     min-height: 100dvh;
     padding: 5rem 1.5rem;
+  }
+
+  .depth-indicator {
+    display: none;
   }
 
   .overlay__bar {

@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { COLORS } from "@/lib/constants";
+import { pointer, ensurePointerListener } from "@/lib/pointer";
 import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 
 function seededRandom(seed: number): number {
@@ -15,6 +16,7 @@ function seededRandom(seed: number): number {
 function DriftParticles() {
   const ref = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
+  const pointerActive = useRef(false);
   const count = 320;
 
   const { positions, speeds, phases } = useMemo(() => {
@@ -31,16 +33,38 @@ function DriftParticles() {
     return { positions, speeds, phases };
   }, []);
 
+  useEffect(() => {
+    ensurePointerListener();
+    pointerActive.current = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }, []);
+
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const speedMul = scrollAtmosphere.particleSpeed;
     const arr = (ref.current.geometry.attributes.position as THREE.BufferAttribute)
       .array as Float32Array;
     const t = clock.getElapsedTime();
+
+    const mx = pointer.nx * 14;
+    const my = -pointer.ny * 9;
+    const repulse = pointerActive.current;
+
     for (let i = 0; i < count; i++) {
-      arr[i * 3 + 1] += speeds[i] * 0.012 * speedMul;
-      arr[i * 3 + 0] += Math.sin(t * 0.1 + phases[i]) * 0.0015 * speedMul;
-      if (arr[i * 3 + 1] > 10) arr[i * 3 + 1] = -10;
+      const ix = i * 3;
+      if (repulse) {
+        const dx = arr[ix] - mx;
+        const dy = arr[ix + 1] - my;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 3.5 && dist > 0.05) {
+          const force = ((3.5 - dist) / 3.5) * 0.045;
+          arr[ix] += (dx / dist) * force;
+          arr[ix + 1] += (dy / dist) * force * 0.6;
+        }
+      }
+
+      arr[ix + 1] += speeds[i] * 0.012 * speedMul;
+      arr[ix] += Math.sin(t * 0.1 + phases[i]) * 0.0015 * speedMul;
+      if (arr[ix + 1] > 10) arr[ix + 1] = -10;
     }
     ref.current.geometry.attributes.position.needsUpdate = true;
 
