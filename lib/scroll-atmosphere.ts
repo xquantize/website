@@ -13,6 +13,8 @@ export type ScrollAtmosphere = {
   fishOpacity: number;
   fishSpeed: number;
   pageScroll: number;
+  fogDensity: number;
+  causticStrength: number;
 };
 
 const DEFAULTS: ScrollAtmosphere = {
@@ -28,6 +30,8 @@ const DEFAULTS: ScrollAtmosphere = {
   fishOpacity: 0.88,
   fishSpeed: 1,
   pageScroll: 0,
+  fogDensity: 0.032,
+  causticStrength: 0.82,
 };
 
 export const scrollAtmosphere: ScrollAtmosphere = { ...DEFAULTS };
@@ -46,4 +50,5 @@ export function applyAtmosphereToDom() {
   );
   root.style.setProperty("--scroll-depth", `${scrollAtmosphere.scrollDepth}`);
   root.style.setProperty("--hero-opacity", `${scrollAtmosphere.heroOpacity}`);
+  root.style.setProperty("--caustic-strength", `${scrollAtmosphere.causticStrength}`);
 }

@@ -1,23 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { COLORS } from "@/lib/constants";
+import type { QualityTier } from "@/lib/quality";
+import { QUALITY } from "@/lib/quality";
 import { pointer, ensurePointerListener } from "@/lib/pointer";
 import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
+
+type Props = { tier: QualityTier };
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
   return x - Math.floor(x);
 }
 
-function DriftParticles() {
+function DriftParticles({ count }: { count: number }) {
   const ref = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const pointerActive = useRef(false);
-  const count = 320;
 
   const { positions, speeds, phases } = useMemo(() => {
     const positions = new Float32Array(count * 3);
@@ -31,7 +34,7 @@ function DriftParticles() {
       phases.push(seededRandom(i * 7.1) * Math.PI * 2);
     }
     return { positions, speeds, phases };
-  }, []);
+  }, [count]);
 
   useEffect(() => {
     ensurePointerListener();
@@ -40,6 +43,7 @@ function DriftParticles() {
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
+
     const speedMul = scrollAtmosphere.particleSpeed;
     const arr = (ref.current.geometry.attributes.position as THREE.BufferAttribute)
       .array as Float32Array;
@@ -54,8 +58,9 @@ function DriftParticles() {
       if (repulse) {
         const dx = arr[ix] - mx;
         const dy = arr[ix + 1] - my;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 3.5 && dist > 0.05) {
+        const distSq = dx * dx + dy * dy;
+        if (distSq < 12.25 && distSq > 0.0025) {
+          const dist = Math.sqrt(distSq);
           const force = ((3.5 - dist) / 3.5) * 0.045;
           arr[ix] += (dx / dist) * force;
           arr[ix + 1] += (dy / dist) * force * 0.6;
@@ -92,35 +97,29 @@ function DriftParticles() {
   );
 }
 
-function ScrollSparkles() {
-  const [opacity, setOpacity] = useState(0.35);
-  const [speed, setSpeed] = useState(0.12);
-  const lastUpdate = useRef(0);
-
-  useFrame(({ clock }) => {
-    if (clock.elapsedTime - lastUpdate.current < 0.05) return;
-    lastUpdate.current = clock.elapsedTime;
-    setOpacity(scrollAtmosphere.particleOpacity * 0.65);
-    setSpeed(0.12 * scrollAtmosphere.particleSpeed);
-  });
+function ScrollSparkles({ count }: { count: number }) {
+  if (count <= 0) return null;
 
   return (
     <Sparkles
-      count={80}
+      count={count}
       scale={[22, 16, 6]}
       size={1.5}
-      speed={speed}
-      opacity={opacity}
+      speed={0.1}
+      opacity={0.32}
       color={COLORS.seafoam}
     />
   );
 }
 
-export function ParticleField() {
+export function ParticleField({ tier }: Props) {
+  const count = QUALITY.particles[tier];
+  const sparkleCount = QUALITY.sparkles[tier];
+
   return (
     <>
-      <DriftParticles />
-      <ScrollSparkles />
+      <DriftParticles count={count} />
+      <ScrollSparkles count={sparkleCount} />
     </>
   );
 }

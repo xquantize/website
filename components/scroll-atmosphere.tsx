@@ -43,6 +43,8 @@ export function ScrollAtmosphere() {
         heroOpacity: 0,
         fishOpacity: 0.82,
         fishSpeed: 0.88,
+        fogDensity: 0.038,
+        causticStrength: 0.72,
         ease: "none",
       })
         // Work: brightest band — peak readability
@@ -57,6 +59,8 @@ export function ScrollAtmosphere() {
           scrollDepth: 0.22,
           fishOpacity: 0.92,
           fishSpeed: 0.72,
+          fogDensity: 0.024,
+          causticStrength: 0.48,
           ease: "none",
         })
         // About: still sunlit — hue shifts, stays open
@@ -71,6 +75,8 @@ export function ScrollAtmosphere() {
           scrollDepth: 0.32,
           fishOpacity: 0.88,
           fishSpeed: 0.58,
+          fogDensity: 0.026,
+          causticStrength: 0.38,
           ease: "none",
         })
         // Contact: twilight, not abyss
@@ -85,6 +91,8 @@ export function ScrollAtmosphere() {
           scrollDepth: 0.44,
           fishOpacity: 0.72,
           fishSpeed: 0.42,
+          fogDensity: 0.048,
+          causticStrength: 0.18,
           ease: "none",
         })
         // Footer: dusk — moody but capped
@@ -99,6 +107,8 @@ export function ScrollAtmosphere() {
           scrollDepth: 0.52,
           fishOpacity: 0.58,
           fishSpeed: 0.3,
+          fogDensity: 0.062,
+          causticStrength: 0.1,
           ease: "none",
         });
     });

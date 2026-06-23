@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
 
 const MARKS = [
@@ -15,22 +14,9 @@ const MARKS = [
 export function DepthIndicator() {
   const pathname = usePathname();
   const reducedMotion = usePrefersReducedMotion();
-  const [depth, setDepth] = useState(0);
   const [active, setActive] = useState("hero");
 
   const isHome = pathname === "/";
-
-  useEffect(() => {
-    if (!isHome || reducedMotion) return;
-
-    let frame = 0;
-    const tick = () => {
-      setDepth(scrollAtmosphere.scrollDepth);
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [isHome, reducedMotion]);
 
   useEffect(() => {
     if (!isHome) return;
@@ -57,11 +43,7 @@ export function DepthIndicator() {
   return (
     <nav className="depth-indicator" aria-label="Scroll depth">
       <div className="depth-indicator__track">
-        <div
-          className="depth-indicator__fill"
-          style={{ transform: `scaleY(${depth})` }}
-          aria-hidden
-        />
+        <div className="depth-indicator__fill" aria-hidden />
         {MARKS.map((mark) => (
           <a
             key={mark.id}

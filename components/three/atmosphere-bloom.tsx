@@ -7,21 +7,25 @@ import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 
 export function AtmosphereBloom() {
   const [intensity, setIntensity] = useState(0.4);
-  const lastUpdate = useRef(0);
+  const current = useRef(0.4);
+  const last = useRef(0);
 
   useFrame(({ clock }) => {
-    if (clock.elapsedTime - lastUpdate.current < 0.04) return;
+    if (clock.elapsedTime - last.current < 0.2) return;
     const next = scrollAtmosphere.bloomIntensity;
-    lastUpdate.current = clock.elapsedTime;
-    setIntensity((prev) => (Math.abs(next - prev) > 0.008 ? next : prev));
+    if (Math.abs(next - current.current) > 0.025) {
+      current.current = next;
+      setIntensity(next);
+      last.current = clock.elapsedTime;
+    }
   });
 
   return (
     <Bloom
       intensity={intensity}
-      luminanceThreshold={0.1}
-      luminanceSmoothing={0.9}
-      mipmapBlur
+      luminanceThreshold={0.12}
+      luminanceSmoothing={0.85}
+      mipmapBlur={false}
     />
   );
 }

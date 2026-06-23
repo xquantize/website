@@ -69,7 +69,20 @@ export function Playground({ accent = "#7dd3c0" }: Props) {
     [datasetKind, seed],
   );
 
-  const trainer = useTrainer({
+  const {
+    tick,
+    step,
+    loss,
+    accuracy,
+    lossHistory,
+    running,
+    play,
+    pause,
+    reset,
+    stepOnce,
+    predict,
+    getSnapshot,
+  } = useTrainer({
     hiddenSizes,
     activation,
     learningRate,
@@ -77,7 +90,7 @@ export function Playground({ accent = "#7dd3c0" }: Props) {
     speed,
   });
 
-  const snapshot = trainer.getSnapshot(probe.x, probe.y);
+  const snapshot = getSnapshot(probe.x, probe.y);
 
   const activePresetId = useMemo(() => {
     if (manualConfig) return null;
@@ -89,7 +102,7 @@ export function Playground({ accent = "#7dd3c0" }: Props) {
 
   const applyPreset = useCallback(
     (preset: PlaygroundPreset) => {
-      if (trainer.running) trainer.pause();
+      if (running) pause();
       setManualConfig(false);
       setHiddenSizes(preset.hiddenSizes);
       setActivation(preset.activation);
@@ -99,35 +112,35 @@ export function Playground({ accent = "#7dd3c0" }: Props) {
       setSeed((s) => s + 1);
       setPresetTick((t) => t + 1);
     },
-    [trainer],
+    [running, pause],
   );
 
   useEffect(() => {
     if (presetTick === 0) return;
-    trainer.reset();
-  }, [presetTick, trainer]);
+    reset();
+  }, [presetTick, reset]);
 
   return (
     <div className="lab" style={{ "--project-accent": accent } as React.CSSProperties}>
       <div className="lab__layout">
         <div ref={stageRef} className="lab__stage">
           <DecisionBoundary
-            predict={trainer.predict}
+            predict={predict}
             samples={dataset}
-            tick={trainer.tick}
+            tick={tick}
             size={canvasSize}
             probe={probe}
             accent={accent}
             onProbe={setProbe}
           />
           <LossCurve
-            history={trainer.lossHistory}
+            history={lossHistory}
             width={canvasSize}
             height={44}
           />
           <NetworkDiagram
             snapshot={snapshot}
-            running={trainer.running}
+            running={running}
             width={canvasSize}
           />
         </div>
@@ -140,10 +153,10 @@ export function Playground({ accent = "#7dd3c0" }: Props) {
           speed={speed}
           speeds={SPEEDS}
           activePresetId={activePresetId}
-          running={trainer.running}
-          step={trainer.step}
-          loss={trainer.loss}
-          accuracy={trainer.accuracy}
+          running={running}
+          step={step}
+          loss={loss}
+          accuracy={accuracy}
           onHiddenSizes={(s) => {
             markManual();
             setHiddenSizes(s);
@@ -165,13 +178,13 @@ export function Playground({ accent = "#7dd3c0" }: Props) {
             setSpeed(s);
           }}
           onPreset={applyPreset}
-          onPlayPause={() => (trainer.running ? trainer.pause() : trainer.play())}
+          onPlayPause={() => (running ? pause() : play())}
           onReset={() => {
             markManual();
-            trainer.reset();
+            reset();
             setSeed((s) => s + 1);
           }}
-          onStep={trainer.stepOnce}
+          onStep={stepOnce}
         />
       </div>
     </div>

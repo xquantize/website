@@ -25,6 +25,7 @@ type FishSchoolProps = {
   color?: string;
   spread?: { x: number; y: number; z: number };
   verticalDrift?: number;
+  simSkip?: number;
 };
 
 function fishGeometry() {
@@ -51,10 +52,12 @@ export function FishSchool({
   color = COLORS.seafoam,
   spread = { x: 5, y: FISH_VIEW_HALF * 1.6, z: 0.8 },
   verticalDrift = 0.003,
+  simSkip = 1,
 }: FishSchoolProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const boidsRef = useRef<Boid[]>([]);
   const pointerActive = useRef(false);
+  const frameTick = useRef(0);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const geometry = useMemo(() => fishGeometry(), []);
   const material = useMemo(
@@ -80,6 +83,9 @@ export function FishSchool({
   useFrame(() => {
     if (reducedMotion) return;
 
+    frameTick.current++;
+    const runSim = frameTick.current % simSkip === 0;
+
     const mesh = meshRef.current;
     const boids = boidsRef.current;
     if (!mesh || boids.length === 0) return;
@@ -87,28 +93,30 @@ export function FishSchool({
     const speedMul = scrollAtmosphere.fishSpeed * 0.9;
     const drift = verticalDrift + fishScrollDrift(scrollAtmosphere.pageScroll);
 
-    stepSchool(
-      boids,
-      {
-        centerZ,
-        centerX,
-        bounds: { x: 12, y: FISH_VIEW_HALF },
-        boundsY: BOUNDS_Y,
-        maxSpeed: 0.055,
-        speedMul,
-        separation: 0.038,
-        alignment: 0.028,
-        cohesion: 0.022,
-        cursorRepel: 0.11,
-        boundsForce: 0.007,
-        verticalDrift: drift,
-      },
-      {
-        x: pointer.nx * 14,
-        y: -pointer.ny * 9,
-        active: pointerActive.current,
-      },
-    );
+    if (runSim) {
+      stepSchool(
+        boids,
+        {
+          centerZ,
+          centerX,
+          bounds: { x: 12, y: FISH_VIEW_HALF },
+          boundsY: BOUNDS_Y,
+          maxSpeed: 0.055,
+          speedMul,
+          separation: 0.038,
+          alignment: 0.028,
+          cohesion: 0.022,
+          cursorRepel: 0.11,
+          boundsForce: 0.007,
+          verticalDrift: drift,
+        },
+        {
+          x: pointer.nx * 14,
+          y: -pointer.ny * 9,
+          active: pointerActive.current,
+        },
+      );
+    }
 
     for (let i = 0; i < boids.length; i++) {
       const boid = boids[i];
