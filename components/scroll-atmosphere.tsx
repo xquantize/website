@@ -23,7 +23,10 @@ export function ScrollAtmosphere() {
           start: "top top",
           end: "bottom bottom",
           scrub: 1.6,
-          onUpdate: applyAtmosphereToDom,
+          onUpdate: (self) => {
+            scrollAtmosphere.pageScroll = self.progress;
+            applyAtmosphereToDom();
+          },
         },
       });
 
@@ -38,6 +41,8 @@ export function ScrollAtmosphere() {
         vignetteStrength: 0.44,
         scrollDepth: 0.12,
         heroOpacity: 0,
+        fishOpacity: 0.82,
+        fishSpeed: 0.88,
         ease: "none",
       })
         // Work: brightest band — peak readability
@@ -50,6 +55,8 @@ export function ScrollAtmosphere() {
           waterBright: 1.04,
           vignetteStrength: 0.34,
           scrollDepth: 0.22,
+          fishOpacity: 0.92,
+          fishSpeed: 0.72,
           ease: "none",
         })
         // About: still sunlit — hue shifts, stays open
@@ -62,6 +69,8 @@ export function ScrollAtmosphere() {
           waterBright: 1.02,
           vignetteStrength: 0.36,
           scrollDepth: 0.32,
+          fishOpacity: 0.88,
+          fishSpeed: 0.58,
           ease: "none",
         })
         // Contact: twilight, not abyss
@@ -74,6 +83,8 @@ export function ScrollAtmosphere() {
           waterBright: 0.94,
           vignetteStrength: 0.48,
           scrollDepth: 0.44,
+          fishOpacity: 0.72,
+          fishSpeed: 0.42,
           ease: "none",
         })
         // Footer: dusk — moody but capped
@@ -86,6 +97,8 @@ export function ScrollAtmosphere() {
           waterBright: 0.9,
           vignetteStrength: 0.56,
           scrollDepth: 0.52,
+          fishOpacity: 0.58,
+          fishSpeed: 0.3,
           ease: "none",
         });
     });

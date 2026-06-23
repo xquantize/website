@@ -10,6 +10,9 @@ export type ScrollAtmosphere = {
   vignetteStrength: number;
   scrollDepth: number;
   heroOpacity: number;
+  fishOpacity: number;
+  fishSpeed: number;
+  pageScroll: number;
 };
 
 const DEFAULTS: ScrollAtmosphere = {
@@ -22,6 +25,9 @@ const DEFAULTS: ScrollAtmosphere = {
   vignetteStrength: 0.38,
   scrollDepth: 0,
   heroOpacity: 1,
+  fishOpacity: 0.88,
+  fishSpeed: 1,
+  pageScroll: 0,
 };
 
 export const scrollAtmosphere: ScrollAtmosphere = { ...DEFAULTS };
