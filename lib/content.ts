@@ -11,7 +11,6 @@ export const SITE = {
     "ML and autonomy specialist with deep experience in perception systems and large language models.",
     "I've designed and built autonomy stacks for multi-UXV, multi-domain vehicles — spanning air, surface, and sub-surface platforms.",
     "Disciplined engineering meets research-driven iteration. I care about systems that ship, not just demos.",
-    "The scalar autograd playground runs entirely in your browser — forward pass, backprop, and a live decision boundary with no framework behind it.",
   ],
 } as const;
 

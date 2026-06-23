@@ -8,14 +8,16 @@ import { WorkSection } from "@/components/sections/work-section";
 export default function Home() {
   return (
     <SiteShell scrollAtmosphere>
-      <section id="hero" className="hero-section">
-        <HeroOverlay />
-      </section>
+      <div className="home-page">
+        <section id="hero" className="hero-section">
+          <HeroOverlay />
+        </section>
 
-      <WorkSection />
-      <AboutSection />
-      <ContactSection />
-      <SiteFooter />
+        <WorkSection />
+        <AboutSection />
+        <ContactSection />
+        <SiteFooter />
+      </div>
     </SiteShell>
   );
 }

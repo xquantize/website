@@ -8,6 +8,8 @@ export type ScrollAtmosphere = {
   waterHue: number;
   waterBright: number;
   vignetteStrength: number;
+  scrollDepth: number;
+  heroOpacity: number;
 };
 
 const DEFAULTS: ScrollAtmosphere = {
@@ -17,7 +19,9 @@ const DEFAULTS: ScrollAtmosphere = {
   bloomIntensity: 0.4,
   waterHue: 0,
   waterBright: 1,
-  vignetteStrength: 0.5,
+  vignetteStrength: 0.38,
+  scrollDepth: 0,
+  heroOpacity: 1,
 };
 
 export const scrollAtmosphere: ScrollAtmosphere = { ...DEFAULTS };
@@ -34,4 +38,6 @@ export function applyAtmosphereToDom() {
     "--vignette-strength",
     `${scrollAtmosphere.vignetteStrength}`,
   );
+  root.style.setProperty("--scroll-depth", `${scrollAtmosphere.scrollDepth}`);
+  root.style.setProperty("--hero-opacity", `${scrollAtmosphere.heroOpacity}`);
 }

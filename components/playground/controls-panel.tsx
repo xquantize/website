@@ -2,6 +2,9 @@
 
 import type { Activation } from "@/lib/playground/autograd";
 import type { DatasetKind } from "@/lib/playground/datasets";
+import type { PlaygroundPreset } from "@/lib/playground/presets";
+import { PLAYGROUND_PRESETS } from "@/lib/playground/presets";
+import { SourcePanel } from "./source-panel";
 
 type Props = {
   hiddenSizes: number[];
@@ -10,6 +13,7 @@ type Props = {
   datasetKind: DatasetKind;
   speed: number;
   speeds: readonly number[];
+  activePresetId: string | null;
   running: boolean;
   step: number;
   loss: number;
@@ -19,6 +23,7 @@ type Props = {
   onLearningRate: (lr: number) => void;
   onDatasetKind: (k: DatasetKind) => void;
   onSpeed: (speed: number) => void;
+  onPreset: (preset: PlaygroundPreset) => void;
   onPlayPause: () => void;
   onReset: () => void;
   onStep: () => void;
@@ -31,15 +36,19 @@ function LabOption({
   active,
   onClick,
   children,
+  label,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  label: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
+      aria-label={label}
       className={`lab-option pointer-events-auto${active ? " is-active" : ""}`}
     >
       {children}
@@ -62,9 +71,14 @@ export function ControlsPanel(p: Props) {
   };
 
   return (
-    <div className="lab-controls">
+    <aside className="lab-controls" aria-label="Training controls">
       <div className="lab-bar">
-        <div className="lab-bar__stats font-mono">
+        <div
+          className="lab-bar__stats font-mono"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           <span>
             <span className="lab-bar__label">step</span>
             {p.step.toString().padStart(5, "0")}
@@ -79,10 +93,12 @@ export function ControlsPanel(p: Props) {
           </span>
         </div>
 
-        <div className="lab-bar__actions">
+        <div className="lab-bar__actions" role="group" aria-label="Playback">
           <button
             type="button"
             onClick={p.onPlayPause}
+            aria-pressed={p.running}
+            aria-label={p.running ? "Pause training" : "Play training"}
             className="lab-btn lab-btn--primary pointer-events-auto"
           >
             {p.running ? "Pause" : "Play"}
@@ -91,68 +107,99 @@ export function ControlsPanel(p: Props) {
             type="button"
             onClick={p.onStep}
             disabled={p.running}
+            aria-label="Advance one training step"
             className="lab-btn pointer-events-auto"
           >
             Step
           </button>
-          <button type="button" onClick={p.onReset} className="lab-btn pointer-events-auto">
+          <button
+            type="button"
+            onClick={p.onReset}
+            aria-label="Reset network and dataset"
+            className="lab-btn pointer-events-auto"
+          >
             Reset
           </button>
         </div>
       </div>
 
-      <div className="lab-field">
-        <span className="lab-field__label font-mono">Speed</span>
+      <fieldset className="lab-field">
+        <legend className="lab-field__label font-mono">Presets</legend>
         <div className="lab-options">
+          {PLAYGROUND_PRESETS.map((preset) => (
+            <LabOption
+              key={preset.id}
+              active={p.activePresetId === preset.id}
+              label={`Load ${preset.label} preset`}
+              onClick={() => p.onPreset(preset)}
+            >
+              {preset.label}
+            </LabOption>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="lab-field">
+        <legend className="lab-field__label font-mono">Speed</legend>
+        <div className="lab-options" role="group" aria-label="Training speed">
           {p.speeds.map((s) => (
-            <LabOption key={s} active={s === p.speed} onClick={() => p.onSpeed(s)}>
+            <LabOption
+              key={s}
+              active={s === p.speed}
+              label={`${s} times speed`}
+              onClick={() => p.onSpeed(s)}
+            >
               {s}×
             </LabOption>
           ))}
         </div>
-      </div>
+      </fieldset>
 
-      <div className="lab-field">
-        <span className="lab-field__label font-mono">Dataset</span>
-        <div className="lab-options">
+      <fieldset className="lab-field">
+        <legend className="lab-field__label font-mono">Dataset</legend>
+        <div className="lab-options" role="group" aria-label="Dataset">
           {DATASETS.map((d) => (
             <LabOption
               key={d}
               active={d === p.datasetKind}
+              label={`${d} dataset`}
               onClick={() => p.onDatasetKind(d)}
             >
               {d}
             </LabOption>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       <details className="lab-architecture pointer-events-auto">
         <summary className="lab-architecture__summary font-mono">Architecture</summary>
         <div className="lab-architecture__body">
-          <div className="lab-field">
-            <span className="lab-field__label font-mono">Activation</span>
+          <fieldset className="lab-field">
+            <legend className="lab-field__label font-mono">Activation</legend>
             <div className="lab-options">
               {ACTIVATIONS.map((a) => (
                 <LabOption
                   key={a}
                   active={a === p.activation}
+                  label={`${a} activation`}
                   onClick={() => p.onActivation(a)}
                 >
                   {a}
                 </LabOption>
               ))}
             </div>
-          </div>
+          </fieldset>
 
-          <div className="lab-field">
+          <fieldset className="lab-field">
+            <legend className="lab-field__label font-mono">Hidden layers</legend>
             <div className="lab-field__head">
-              <span className="lab-field__label font-mono">Hidden layers</span>
+              <span className="sr-only">Layer count</span>
               <div className="lab-options lab-options--compact">
                 {[1, 2, 3].map((n) => (
                   <LabOption
                     key={n}
                     active={p.hiddenSizes.length === n}
+                    label={`${n} hidden layers`}
                     onClick={() => setLayerCount(n)}
                   >
                     {n}
@@ -162,36 +209,47 @@ export function ControlsPanel(p: Props) {
             </div>
             {p.hiddenSizes.map((size, i) => (
               <div key={i} className="lab-slider-row">
-                <div className="lab-slider-row__head">
+                <label className="lab-slider-row__head" htmlFor={`layer-${i}`}>
                   <span className="lab-field__label font-mono">Layer {i + 1}</span>
                   <span className="lab-slider-row__value font-mono">{size}</span>
-                </div>
+                </label>
                 <input
+                  id={`layer-${i}`}
                   type="range"
                   min={2}
                   max={8}
                   value={size}
+                  aria-valuemin={2}
+                  aria-valuemax={8}
+                  aria-valuenow={size}
+                  aria-label={`Layer ${i + 1} neurons`}
                   onChange={(e) => setNeurons(i, parseInt(e.target.value))}
                   className="lab-slider pointer-events-auto"
                 />
               </div>
             ))}
-          </div>
+          </fieldset>
 
           <div className="lab-field">
             <div className="lab-slider-row">
-              <div className="lab-slider-row__head">
+              <label className="lab-slider-row__head" htmlFor="learning-rate">
                 <span className="lab-field__label font-mono">Learning rate</span>
                 <span className="lab-slider-row__value font-mono">
                   {p.learningRate.toFixed(3)}
                 </span>
-              </div>
+              </label>
               <input
+                id="learning-rate"
                 type="range"
                 min={-3}
                 max={0}
                 step={0.05}
                 value={Math.log10(p.learningRate)}
+                aria-valuemin={-3}
+                aria-valuemax={0}
+                aria-valuenow={Math.log10(p.learningRate)}
+                aria-valuetext={p.learningRate.toFixed(3)}
+                aria-label="Learning rate"
                 onChange={(e) => p.onLearningRate(10 ** parseFloat(e.target.value))}
                 className="lab-slider pointer-events-auto"
               />
@@ -199,6 +257,8 @@ export function ControlsPanel(p: Props) {
           </div>
         </div>
       </details>
-    </div>
+
+      <SourcePanel />
+    </aside>
   );
 }
