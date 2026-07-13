@@ -285,6 +285,111 @@
   will-change: transform, opacity;
 }
 
+/* ---- Hero network graph (ambient background) ---- */
+
+.hero-graph-ambient {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: calc(0.22 + var(--caustic-strength) * 0.18);
+  mask-image:
+    radial-gradient(
+      ellipse 58% 52% at 72% 46%,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.55) 42%,
+      rgba(0, 0, 0, 0.12) 68%,
+      transparent 82%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.72) 38%,
+      rgba(0, 0, 0, 0.2) 72%,
+      rgba(0, 0, 0, 0.04) 100%
+    );
+  mask-composite: intersect;
+}
+
+.hero-graph-ambient__frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(var(--content-max), calc(100vw - var(--section-x) * 2));
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-inline: var(--panel-pad);
+  box-sizing: border-box;
+}
+
+.hero-graph-ambient__svg {
+  display: block;
+  width: min(26rem, 34vw);
+  aspect-ratio: 1;
+}
+
+.hero-graph-ambient__edge {
+  fill: none;
+  stroke: rgba(125, 211, 192, 0.28);
+  stroke-width: 0.45;
+}
+
+.hero-graph-ambient__edge--flow {
+  stroke-dasharray: 1.5 3.5;
+  animation: graph-flow 16s linear infinite;
+}
+
+.hero-graph-ambient__glow {
+  animation: graph-glow 10s ease-in-out infinite alternate;
+}
+
+.hero-graph-ambient__node {
+  fill: rgba(8, 20, 32, 0.35);
+  stroke: rgba(125, 211, 192, 0.34);
+  stroke-width: 0.4;
+}
+
+.hero-graph-ambient__node--pulse {
+  animation: graph-node-pulse 5s ease-in-out infinite;
+}
+
+.hero-graph-ambient__label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 3.2px;
+  letter-spacing: 0.12em;
+  fill: rgba(245, 240, 232, 0.42);
+  text-transform: uppercase;
+}
+
+@keyframes graph-flow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+@keyframes graph-glow {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes graph-node-pulse {
+  0%,
+  100% {
+    stroke-opacity: 0.34;
+  }
+  50% {
+    stroke-opacity: 0.62;
+  }
+}
+
 /* ---- Cursor ---- */
 
 .cursor-ring,
@@ -399,6 +504,12 @@
     transform: scaleX(0.65);
   }
 
+  .hero-graph-ambient__edge--flow,
+  .hero-graph-ambient__glow,
+  .hero-graph-ambient__node--pulse {
+    animation: none;
+  }
+
   .route-overlay,
   .route-overlay--dive,
   .route-overlay--surface {
@@ -420,6 +531,12 @@ html.reduce-motion .page-enter {
   animation: none !important;
   opacity: 1 !important;
   transform: none !important;
+}
+
+html.reduce-motion .hero-graph-ambient__edge--flow,
+html.reduce-motion .hero-graph-ambient__glow,
+html.reduce-motion .hero-graph-ambient__node--pulse {
+  animation: none;
 }
 
 .hero-accent {
@@ -513,7 +630,11 @@ html.reduce-motion .page-enter {
   height: 1px;
   background: currentColor;
   transform-origin: left;
+  opacity: 0.35;
+  transform: scaleX(0.45);
   animation: pulse-line 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation-delay: 1.6s;
+  animation-fill-mode: both;
 }
 
 /* ---- Scroll sections ---- */
@@ -1866,8 +1987,21 @@ html.route-lab .water-bg {
     --stack-gap: var(--space-2xl);
   }
 
+  .hero-graph-ambient {
+    display: block;
+  }
+
+  .hero-stack {
+    gap: calc(var(--stack-gap) + var(--space-sm));
+    padding-block: var(--space-xs);
+  }
+
+  .overlay__main {
+    padding-block: calc(var(--space-3xl) + var(--space-sm));
+  }
+
   .hero-title {
-    font-size: clamp(3rem, 5vw, 5.75rem);
+    font-size: clamp(3.25rem, 5.2vw, 7.5rem);
   }
 
   .contact-panel {
@@ -1914,6 +2048,12 @@ html.route-lab .water-bg {
   .work-featured__meta {
     justify-content: flex-end;
     gap: var(--space-lg);
+  }
+}
+
+@media (min-width: 1440px) {
+  .hero-title {
+    font-size: clamp(3.5rem, 4.6vw, 8rem);
   }
 }
 

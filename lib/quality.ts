@@ -41,4 +41,5 @@ export const QUALITY = {
   dpr: { high: 1.5, medium: 1.25, low: 1 } as const,
   bloom: { high: true, medium: true, low: false } as const,
   causticsCanvas: { high: true, medium: false, low: false } as const,
+  heroNetworkGraph: { high: true, medium: true, low: false } as const,
 };

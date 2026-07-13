@@ -4,12 +4,18 @@ import { ReactLenis, useLenis } from "lenis/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
+import { registerLenis, SCROLL_LAYOUT_SYNC_EVENT } from "@/lib/scroll-layout-sync";
 import { usePrefersNativeScroll, usePrefersReducedMotion } from "@/lib/motion-preference";
 
 gsap.registerPlugin(ScrollTrigger);
 
 function ScrollSync() {
   const lenis = useLenis();
+
+  useEffect(() => {
+    registerLenis(lenis ?? null);
+    return () => registerLenis(null);
+  }, [lenis]);
 
   useEffect(() => {
     if (!lenis) return;
@@ -23,9 +29,18 @@ function ScrollSync() {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    const onLayoutSync = () => {
+      lenis.resize();
+      ScrollTrigger.refresh();
+      ScrollTrigger.update();
+    };
+
+    window.addEventListener(SCROLL_LAYOUT_SYNC_EVENT, onLayoutSync);
+
     return () => {
       gsap.ticker.remove(raf);
       lenis.off("scroll", ScrollTrigger.update);
+      window.removeEventListener(SCROLL_LAYOUT_SYNC_EVENT, onLayoutSync);
     };
   }, [lenis]);
 

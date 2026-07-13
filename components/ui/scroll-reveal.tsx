@@ -46,6 +46,7 @@ export function ScrollReveal({
                 start: "top 92%",
                 end: "top 60%",
                 scrub: 0.6,
+                invalidateOnRefresh: true,
               },
             },
           )
@@ -62,6 +63,7 @@ export function ScrollReveal({
                 trigger: el,
                 start: "top 90%",
                 once: true,
+                invalidateOnRefresh: true,
               },
             },
           );

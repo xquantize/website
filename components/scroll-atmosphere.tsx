@@ -8,6 +8,7 @@ import {
   resetScrollAtmosphere,
   scrollAtmosphere,
 } from "@/lib/scroll-atmosphere";
+import { SCROLL_LAYOUT_SYNC_EVENT } from "@/lib/scroll-layout-sync";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -113,7 +114,16 @@ export function ScrollAtmosphere() {
         });
     });
 
-    return () => ctx.revert();
+    const onLayoutSync = () => {
+      applyAtmosphereToDom();
+    };
+
+    window.addEventListener(SCROLL_LAYOUT_SYNC_EVENT, onLayoutSync);
+
+    return () => {
+      window.removeEventListener(SCROLL_LAYOUT_SYNC_EVENT, onLayoutSync);
+      ctx.revert();
+    };
   }, []);
 
   return null;
