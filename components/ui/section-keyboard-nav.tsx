@@ -51,6 +51,7 @@ export function SectionKeyboardNav() {
       if (isTypingTarget(e.target)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (document.body.dataset.terminalOpen === "true") return;
+      if (document.body.dataset.commandOpen === "true") return;
 
       const nextKeys = ["j", "J", "ArrowDown"];
       const prevKeys = ["k", "K", "ArrowUp"];

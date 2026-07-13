@@ -60,6 +60,7 @@ export function TerminalEasterEgg() {
         }
         return;
       }
+      if (document.body.dataset.commandOpen === "true") return;
       if (isTypingTarget(e.target)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key.length !== 1) return;

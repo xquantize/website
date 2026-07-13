@@ -27,7 +27,7 @@ export function ProjectPageContent({ project }: { project: Project }) {
       <ProjectNavTop />
 
       <header className="project-page__header">
-        <p className="font-mono text-[0.7rem] tracking-[0.15em] uppercase opacity-40 mb-5">
+        <p className="project-page__meta font-mono">
           {project.id} · {project.status}
         </p>
         <h1
@@ -46,10 +46,10 @@ export function ProjectPageContent({ project }: { project: Project }) {
           </div>
           {project.intro && (
             <div className="project-page__prose">
-              <p className="font-mono text-[0.65rem] tracking-[0.14em] uppercase opacity-35 mb-4">
+              <p className="project-page__prose-label font-mono">
                 What you&apos;re seeing
               </p>
-              <p className="text-sm opacity-50 leading-relaxed">{project.intro}</p>
+              <p className="project-page__intro">{project.intro}</p>
             </div>
           )}
         </>

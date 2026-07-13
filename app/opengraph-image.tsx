@@ -8,8 +8,8 @@ export const contentType = "image/png";
 export default function OpenGraphImage() {
   return renderOgImage({
     label: SITE.name,
-    headline: "building ",
-    accent: "intelligent systems.",
-    subtitle: SITE.title,
+    headline: "see it. read it. ",
+    accent: "ship it.",
+    subtitle: SITE.tagline,
   });
 }

@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { AppChrome } from "@/components/providers/app-chrome";
+import { SkipLink } from "@/components/ui/skip-link";
+import { fontVariables } from "@/lib/fonts";
 import { SITE } from "@/lib/content";
 import { getSiteUrl } from "@/lib/site-url";
 
 const title = `${SITE.name} — ${SITE.title}`;
 const description =
-  "ML and autonomy specialist. Perception systems, LLMs, and multi-domain UXV autonomy stacks. Open to contracting.";
+  "Applied ML and AI engineer. Computer vision, LLMs, OCR, and production ML systems. Open to contracting.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -36,20 +38,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body>
+    <html lang="en" className={fontVariables}>
+      <body className={fontVariables}>
+        <SkipLink />
         <SmoothScroll>{children}</SmoothScroll>
         <AppChrome />
       </body>

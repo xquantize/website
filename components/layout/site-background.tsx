@@ -4,7 +4,7 @@ import { HeroScene } from "@/components/three/hero-scene";
 import { ScrollAtmosphere } from "@/components/scroll-atmosphere";
 import { WaterCaustics } from "@/components/ui/water-caustics";
 import { useQualityTier } from "@/lib/quality";
-import { usePrefersReducedMotion } from "@/lib/motion-preference";
+import { usePrefersNativeScroll, usePrefersReducedMotion } from "@/lib/motion-preference";
 
 type Props = {
   scrollAtmosphere?: boolean;
@@ -13,10 +13,13 @@ type Props = {
 
 export function SiteBackground({ scrollAtmosphere = false, scene = "full" }: Props) {
   const reducedMotion = usePrefersReducedMotion();
+  const nativeScroll = usePrefersNativeScroll();
   const tier = useQualityTier();
-  const showCanvas = scene === "full" && !reducedMotion;
+  const showCanvas = scene === "full" && !reducedMotion && !nativeScroll;
   const waterClass =
-    scene === "static" || reducedMotion ? "water-bg water-bg--static" : "water-bg";
+    scene === "static" || reducedMotion || nativeScroll
+      ? "water-bg water-bg--static"
+      : "water-bg";
   const vignetteClass =
     scene === "static" ? "vignette vignette--page" : "vignette";
 

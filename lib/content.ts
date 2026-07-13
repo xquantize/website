@@ -1,18 +1,41 @@
+export type HeroLinePart = {
+  text: string;
+  accent?: boolean;
+};
+
+export type HeroLine = HeroLinePart[];
+
 export const SITE = {
   name: "Zane Neave",
-  title: "ML & Autonomy Specialist",
+  title: "ML & AI Engineer",
+  tagline: "Vision, LLMs, OCR — models built to ship.",
   email: "zane.n.neave@gmail.com",
   github: "https://github.com/xquantize",
   linkedin: "https://www.linkedin.com/in/zane-neave-rex",
   orcid: "https://orcid.org/0009-0005-1559-1426",
   availability: "Open to contracting",
   accent: "#7dd3c0",
+  aboutHeading: "Applied ML across vision, language, and production.",
   bio: [
-    "ML and autonomy specialist with deep experience in perception systems and large language models.",
-    "I've designed and built autonomy stacks for multi-UXV, multi-domain vehicles — spanning air, surface, and sub-surface platforms.",
-    "Disciplined engineering meets research-driven iteration. I care about systems that ship, not just demos.",
+    "ML and AI engineer with broad experience across computer vision, large language models, OCR, and production ML systems.",
+    "I've built perception pipelines, document intelligence, and model-driven products — from research prototypes to deployed systems in demanding real-world environments.",
+    "Disciplined engineering meets research-driven iteration. I care about models that work outside the notebook, not just benchmarks.",
+  ],
+  capabilities: [
+    "Computer vision",
+    "LLMs & agents",
+    "OCR & document AI",
+    "Production ML",
+    "Model training",
+    "Edge deployment",
   ],
 } as const;
+
+export const HERO_LINES: HeroLine[] = [
+  [{ text: "see it." }],
+  [{ text: "read", accent: true }, { text: " it." }],
+  [{ text: "ship it." }],
+];
 
 export const NAV = [
   { label: "Work", href: "/#work" },

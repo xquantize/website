@@ -36,31 +36,31 @@ export function ScrollReveal({
       mode === "scrub"
         ? gsap.fromTo(
             el,
-            { opacity: 0, y: 56 },
+            { opacity: 0, y: 20 },
             {
               opacity: 1,
               y: 0,
-              ease: "none",
+              ease: "power2.out",
               scrollTrigger: {
                 trigger: el,
-                start: "top 96%",
-                end: "top 48%",
-                scrub: 1.4,
+                start: "top 92%",
+                end: "top 60%",
+                scrub: 0.6,
               },
             },
           )
         : gsap.fromTo(
             el,
-            { opacity: 0, y: 36 },
+            { opacity: 0, y: 20 },
             {
               opacity: 1,
               y: 0,
-              duration: 1.1,
+              duration: 0.75,
               delay,
-              ease: "power3.out",
+              ease: "power2.out",
               scrollTrigger: {
                 trigger: el,
-                start: "top 88%",
+                start: "top 90%",
                 once: true,
               },
             },
