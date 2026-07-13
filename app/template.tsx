@@ -6,11 +6,32 @@ import { syncScrollLayout } from "@/lib/scroll-layout-sync";
 
 const ROUTE_TRANSITION_MS = 900;
 const PAGE_ENTER_MS = 550;
+const HASH_SETTLE_MS = 100;
 
-function settleScrollLayout(scrollToTop: boolean, reason: string) {
+const PATH_STORE_KEY = "__portfolioPathStore";
+
+type PathStore = {
+  current: string | null;
+  previous: string | null;
+};
+
+/**
+ * Survives template remounts and React Strict Mode double-mounting.
+ * Only advances when pathname actually changes — so a Strict remount of the
+ * same route still sees pathChanged=true against the real previous route.
+ */
+function getPathStore(): PathStore {
+  const g = globalThis as unknown as Record<string, PathStore | undefined>;
+  if (!g[PATH_STORE_KEY]) {
+    g[PATH_STORE_KEY] = { current: null, previous: null };
+  }
+  return g[PATH_STORE_KEY]!;
+}
+
+function settleScrollLayout(reason: string) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      syncScrollLayout({ scrollToTop, reason });
+      syncScrollLayout({ reason });
     });
   });
 }
@@ -19,7 +40,6 @@ export default function PageTransition({ children }: { children: React.ReactNode
   const pathname = usePathname();
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const prevPath = useRef(pathname);
 
   useEffect(() => {
     const content = contentRef.current;
@@ -30,15 +50,24 @@ export default function PageTransition({ children }: { children: React.ReactNode
     void content.offsetWidth;
     content.classList.add("page-enter");
 
-    const pathChanged = prevPath.current !== pathname;
+    const store = getPathStore();
+    const navigated = store.current !== pathname;
+    if (navigated) {
+      store.previous = store.current;
+      store.current = pathname;
+    }
+
+    const previous = store.previous;
+    const pathChanged = previous !== null && previous !== pathname;
     const diving = pathname.startsWith("/work/");
-    const surfacing = prevPath.current.startsWith("/work/") && pathname === "/";
-    const hasRouteOverlay = pathChanged && (diving || surfacing) && overlay;
+    const surfacing = Boolean(previous?.startsWith("/work/")) && pathname === "/";
+    const hasRouteOverlay = pathChanged && (diving || surfacing) && Boolean(overlay);
+    const hasHash = Boolean(window.location.hash);
 
     let routeTimer: number | undefined;
     let syncTimer: number | undefined;
 
-    if (hasRouteOverlay) {
+    if (hasRouteOverlay && overlay) {
       overlay.classList.remove("route-overlay--dive", "route-overlay--surface");
       void overlay.offsetWidth;
       overlay.classList.add(diving ? "route-overlay--dive" : "route-overlay--surface");
@@ -50,14 +79,18 @@ export default function PageTransition({ children }: { children: React.ReactNode
       }, ROUTE_TRANSITION_MS);
     }
 
+    // Soft route change: wait for overlay / page-enter to finish.
+    // Hash-only or hard load into a hash: settle almost immediately so triggers match scroll.
     if (pathChanged) {
       const delay = hasRouteOverlay ? ROUTE_TRANSITION_MS : PAGE_ENTER_MS;
       syncTimer = window.setTimeout(() => {
-        settleScrollLayout(true, hasRouteOverlay ? "route-transition" : "page-enter");
+        settleScrollLayout(hasRouteOverlay ? "route-transition" : "page-enter");
       }, delay);
+    } else if (hasHash) {
+      syncTimer = window.setTimeout(() => {
+        settleScrollLayout("hash-entry");
+      }, HASH_SETTLE_MS);
     }
-
-    prevPath.current = pathname;
 
     return () => {
       if (routeTimer) window.clearTimeout(routeTimer);

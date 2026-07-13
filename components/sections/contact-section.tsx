@@ -1,4 +1,3 @@
-import Balancer from "react-wrap-balancer";
 import { ReadingPool } from "@/components/ui/reading-pool";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { SITE } from "@/lib/content";
@@ -13,7 +12,7 @@ export function ContactSection() {
               <div className="section-divider" />
               <p className="section-kicker font-mono">Contact</p>
               <h2 className="section-title font-serif italic font-light tracking-tight">
-                <Balancer>Let&apos;s talk.</Balancer>
+                Let&apos;s talk.
               </h2>
             </header>
 

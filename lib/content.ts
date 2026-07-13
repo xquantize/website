@@ -74,6 +74,20 @@ export const PROJECTS: Project[] = [
     accent: "#7dd3c0",
     kind: "playground",
   },
+  {
+    id: "02",
+    slug: "document-ocr",
+    title: "In-browser OCR",
+    hook: "Text from pixels.",
+    description:
+      "Tesseract.js in the browser — drop any image with text, get line boxes and a transcript. No server upload. Pattern hints flag dates and amounts without pretending to understand the document.",
+    intro:
+      "OCR runs fully on-device via Tesseract WASM. Each line shows the engine’s own confidence. Optional regex hints surface date-like and amount-like tokens — they are not structured field extraction.",
+    tags: ["OCR", "Vision", "Browser"],
+    status: "Live",
+    accent: "#e8b86d",
+    kind: "playground",
+  },
 ];
 
 export function getProjectBySlug(slug: string): Project | undefined {

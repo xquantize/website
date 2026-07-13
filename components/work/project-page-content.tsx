@@ -16,6 +16,25 @@ const Playground = dynamic(
   },
 );
 
+const ReceiptOcr = dynamic(
+  () => import("@/components/ocr/receipt-ocr").then((m) => m.DocumentOcr),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="font-mono text-[0.65rem] tracking-[0.12em] uppercase opacity-35 py-16">
+        Loading OCR lab…
+      </p>
+    ),
+  },
+);
+
+function PlaygroundForProject({ project }: { project: Project }) {
+  if (project.slug === "document-ocr" || project.slug === "receipt-ocr") {
+    return <ReceiptOcr accent={project.accent} />;
+  }
+  return <Playground accent={project.accent} />;
+}
+
 export function ProjectPageContent({ project }: { project: Project }) {
   const style = { "--project-accent": project.accent } as React.CSSProperties;
 
@@ -42,13 +61,11 @@ export function ProjectPageContent({ project }: { project: Project }) {
       {project.kind === "playground" ? (
         <>
           <div className="project-page__lab">
-            <Playground accent={project.accent} />
+            <PlaygroundForProject project={project} />
           </div>
           {project.intro && (
             <div className="project-page__prose">
-              <p className="project-page__prose-label font-mono">
-                What you&apos;re seeing
-              </p>
+              <p className="project-page__prose-label font-mono">What you&apos;re seeing</p>
               <p className="project-page__intro">{project.intro}</p>
             </div>
           )}
@@ -69,9 +86,7 @@ export function ProjectPageContent({ project }: { project: Project }) {
               ))}
             </ul>
           </section>
-          <p className="project-case__footnote font-mono">
-            Case study forthcoming.
-          </p>
+          <p className="project-case__footnote font-mono">Case study forthcoming.</p>
         </div>
       )}
 

@@ -6,13 +6,23 @@ gsap.registerPlugin(ScrollTrigger);
 export const SCROLL_LAYOUT_SYNC_EVENT = "scroll-layout-sync";
 
 export type ScrollLayoutSyncDetail = {
-  scrollToTop?: boolean;
   reason?: string;
 };
 
 type LenisLike = {
   resize: () => void;
-  scrollTo: (target: number, options?: { immediate?: boolean }) => void;
+  scrollTo: (
+    target: number | string | HTMLElement,
+    options?: {
+      immediate?: boolean;
+      offset?: number;
+      duration?: number;
+      onComplete?: () => void;
+    },
+  ) => void;
+  scroll?: number;
+  actualScroll?: number;
+  limit?: number;
 };
 
 let lenisRef: LenisLike | null = null;
@@ -21,22 +31,68 @@ export function registerLenis(lenis: LenisLike | null) {
   lenisRef = lenis;
 }
 
-export function syncScrollLayout(detail: ScrollLayoutSyncDetail = {}) {
-  if (typeof window === "undefined") return;
-
-  if (detail.scrollToTop) {
-    if (lenisRef) {
-      lenisRef.scrollTo(0, { immediate: true });
-    } else {
-      window.scrollTo(0, 0);
-    }
+function resolveHashTarget(): HTMLElement | null {
+  const raw = window.location.hash.replace(/^#/, "");
+  if (!raw) return null;
+  try {
+    return document.getElementById(raw);
+  } catch {
+    return null;
   }
+}
 
-  lenisRef?.resize();
+function settleTriggers(detail: ScrollLayoutSyncDetail) {
   ScrollTrigger.refresh();
   ScrollTrigger.update();
+  // Force one ticker pass so scrubbed/once triggers apply state without waiting for input.
+  gsap.ticker.tick();
 
   window.dispatchEvent(
     new CustomEvent<ScrollLayoutSyncDetail>(SCROLL_LAYOUT_SYNC_EVENT, { detail }),
   );
+}
+
+/**
+ * Re-sync Lenis + ScrollTrigger after a route transition settles.
+ * If the URL has a hash, scrolls to that target (via Lenis when available) and only then
+ * refreshes/updates triggers against the final scroll position.
+ */
+export function syncScrollLayout(detail: ScrollLayoutSyncDetail = {}) {
+  if (typeof window === "undefined") return;
+
+  lenisRef?.resize();
+
+  const hashTarget = resolveHashTarget();
+  let settled = false;
+
+  const finish = () => {
+    if (settled) return;
+    settled = true;
+    settleTriggers(detail);
+  };
+
+  if (hashTarget) {
+    if (lenisRef) {
+      lenisRef.scrollTo(hashTarget, {
+        offset: 0,
+        duration: 0.85,
+        onComplete: finish,
+      });
+      // Safety if onComplete is skipped (interrupted scroll, etc.)
+      window.setTimeout(finish, 1100);
+      return;
+    }
+
+    hashTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(finish, 500);
+    return;
+  }
+
+  if (lenisRef) {
+    lenisRef.scrollTo(0, { immediate: true });
+  } else {
+    window.scrollTo(0, 0);
+  }
+
+  finish();
 }

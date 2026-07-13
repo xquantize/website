@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Balancer from "react-wrap-balancer";
 import { HERO_LINES, SITE } from "@/lib/content";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
 
@@ -15,9 +14,11 @@ export function HeroOverlay() {
 
   useEffect(() => {
     const title = titleRef.current;
-    if (!title || reducedMotion) return;
+    const hero = document.getElementById("hero");
+    if (!title || !hero || reducedMotion) return;
 
     const lines = title.querySelectorAll(".hero-title__line");
+    // Scope to #hero (section), not the title — otherwise "#hero" resolves inside <h1>.
     const ctx = gsap.context(() => {
       gsap.fromTo(
         lines,
@@ -28,10 +29,11 @@ export function HeroOverlay() {
           stagger: 0.08,
           ease: "none",
           scrollTrigger: {
-            trigger: "#hero",
+            trigger: hero,
             start: "top top",
             end: "75% top",
             scrub: 1.4,
+            invalidateOnRefresh: true,
           },
         },
       );
@@ -44,14 +46,15 @@ export function HeroOverlay() {
           y: 16,
           ease: "none",
           scrollTrigger: {
-            trigger: "#hero",
+            trigger: hero,
             start: "top top",
             end: "bottom top",
             scrub: 1.4,
+            invalidateOnRefresh: true,
           },
         },
       );
-    }, title);
+    }, hero);
 
     return () => ctx.revert();
   }, [reducedMotion]);
@@ -72,17 +75,15 @@ export function HeroOverlay() {
             {HERO_LINES.map((line) => (
               <span key={line.map((part) => part.text).join("")} className="hero-title__line">
                 <span className="hero-title__inner">
-                  <Balancer>
-                    {line.map((part) =>
-                      part.accent ? (
-                        <em key={part.text} className="hero-accent">
-                          {part.text}
-                        </em>
-                      ) : (
-                        <span key={part.text}>{part.text}</span>
-                      ),
-                    )}
-                  </Balancer>
+                  {line.map((part) =>
+                    part.accent ? (
+                      <em key={part.text} className="hero-accent">
+                        {part.text}
+                      </em>
+                    ) : (
+                      <span key={part.text}>{part.text}</span>
+                    ),
+                  )}
                 </span>
               </span>
             ))}

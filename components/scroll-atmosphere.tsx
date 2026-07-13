@@ -24,6 +24,7 @@ export function ScrollAtmosphere() {
           start: "top top",
           end: "bottom bottom",
           scrub: 1.6,
+          invalidateOnRefresh: true,
           onUpdate: (self) => {
             scrollAtmosphere.pageScroll = self.progress;
             applyAtmosphereToDom();

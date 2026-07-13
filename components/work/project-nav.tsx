@@ -1,12 +1,24 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Project } from "@/lib/content";
 import { getAdjacentProjects } from "@/lib/content";
 
 export function ProjectNavTop() {
+  const router = useRouter();
+
   return (
-    <Link href="/#work" className="project-nav__back font-mono pointer-events-auto">
+    <a
+      href="/#work"
+      className="project-nav__back font-mono pointer-events-auto"
+      onClick={(e) => {
+        e.preventDefault();
+        router.push("/#work");
+      }}
+    >
       ← All work
-    </Link>
+    </a>
   );
 }
 

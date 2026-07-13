@@ -30,9 +30,8 @@ function ScrollSync() {
     gsap.ticker.lagSmoothing(0);
 
     const onLayoutSync = () => {
+      // syncScrollLayout already refreshed/updated; keep Lenis dimensions current.
       lenis.resize();
-      ScrollTrigger.refresh();
-      ScrollTrigger.update();
     };
 
     window.addEventListener(SCROLL_LAYOUT_SYNC_EVENT, onLayoutSync);
