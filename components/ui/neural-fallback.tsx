@@ -4,10 +4,10 @@ import { useEffect, useRef } from "react";
 import {
   NEURAL_FALLBACK,
   createLayeredNetwork,
-  createTrainingSparks,
+  createNeuralActivity,
   createWavePool,
   driftedPosition,
-  tickTrainingSparks,
+  tickNeuralActivity,
   waveSpawnInterval,
   combinedEdgeGlow,
   combinedLayerGlow,
@@ -23,6 +23,7 @@ type Props = {
 
 /**
  * Low-cost Canvas2D layered network for mobile / low tier / reduced-motion.
+ * Capped ~30fps ambient / ~45fps scroll-linked to keep the main thread free.
  */
 export function NeuralFallback({ ambient = true }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -31,23 +32,45 @@ export function NeuralFallback({ ambient = true }: Props) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
     if (!ctx) return;
 
     const network = createLayeredNetwork(NEURAL_FALLBACK, 91, true);
-    const { nodes, edges, layerCount } = network;
+    const {
+      nodes,
+      edges,
+      layerCount,
+      layerStarts,
+      layerEnds,
+      layerLabels,
+      dropout,
+    } = network;
     const waves = createWavePool(NEURAL_FALLBACK.maxWaves);
-    const sparks = createTrainingSparks(nodes, edges);
+    const activity = createNeuralActivity(
+      nodes,
+      edges,
+      layerStarts,
+      layerEnds,
+      16,
+      dropout,
+    );
+
+    const pts = nodes.map(() => ({ x: 0, y: 0, layer: 0 }));
+    const layerGlowCache = new Float32Array(layerCount);
+    const edgeGlowCache = new Float32Array(edges.length);
+    const frameBudget = ambient ? 1000 / 30 : 1000 / 45;
 
     let spawnTimer = 1.0;
     let raf = 0;
     let last = performance.now();
+    let acc = 0;
     let w = 0;
     let h = 0;
     let dpr = 1;
+    let visible = true;
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.25);
       w = window.innerWidth;
       h = window.innerHeight;
       canvas.width = Math.floor(w * dpr);
@@ -59,6 +82,16 @@ export function NeuralFallback({ ambient = true }: Props) {
     resize();
     window.addEventListener("resize", resize, { passive: true });
 
+    const onVisibility = () => {
+      visible = !document.hidden;
+      if (visible) {
+        last = performance.now();
+        acc = 0;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     const drawNetwork = (
       time: number,
       amp: number,
@@ -68,71 +101,132 @@ export function NeuralFallback({ ambient = true }: Props) {
     ) => {
       ctx.clearRect(0, 0, w, h);
 
-      // travel 0→1 shifts the 2D graph upward so you move down through layers
       const yShift = ambient ? 0 : (travel - 0.5) * h * -0.55;
 
-      const pts = nodes.map((n) => {
-        const p = driftedPosition(n, time, amp);
-        return {
-          x: p.x * w,
-          y: p.y * h + yShift,
-          layer: n.layer,
-          i: 0,
-        };
-      });
-      pts.forEach((p, i) => {
-        p.i = i;
-      });
+      for (let i = 0; i < nodes.length; i++) {
+        const p = driftedPosition(nodes[i], time, amp);
+        pts[i].x = p.x * w;
+        pts[i].y = p.y * h + yShift;
+        pts[i].layer = nodes[i].layer;
+      }
+
+      if (animate) {
+        for (let L = 0; L < layerCount; L++) {
+          layerGlowCache[L] = combinedLayerGlow(waves, L);
+        }
+        for (let i = 0; i < edges.length; i++) {
+          const e = edges[i];
+          edgeGlowCache[i] = combinedEdgeGlow(waves, e.fromLayer, e.toLayer);
+        }
+      }
 
       for (let i = 0; i < edges.length; i++) {
         const e = edges[i];
-        const waveGlow = animate ? combinedEdgeGlow(waves, e.fromLayer, e.toLayer) : 0;
+        const waveGlow = animate ? edgeGlowCache[i] : 0;
         const spark = animate
           ? Math.max(
-              sparks.edgeEnergy[i],
-              sparks.nodeEnergy[e.a] * 0.55,
-              sparks.nodeEnergy[e.b] * 0.55,
+              activity.edgeEnergy[i],
+              activity.nodeEnergy[e.a] * 0.55,
+              activity.nodeEnergy[e.b] * 0.55,
             )
           : 0;
         const glow = Math.max(waveGlow * 0.75, spark);
-        const alpha = 0.04 + density * 0.02 + glow * 0.6;
-        ctx.strokeStyle = `rgba(125, 211, 192, ${alpha})`;
-        ctx.lineWidth = 0.65 + glow * 1.8;
+        const alpha =
+          (0.02 + density * 0.015 + glow * 0.32) * (0.4 + e.weight * 0.55);
+        ctx.strokeStyle =
+          e.sign < 0
+            ? `rgba(90, 130, 140, ${alpha * 0.65})`
+            : `rgba(125, 211, 192, ${alpha})`;
+        ctx.lineWidth = 0.3 + e.weight * 0.7 + glow * 0.8;
         ctx.beginPath();
         ctx.moveTo(pts[e.a].x, pts[e.a].y);
         ctx.lineTo(pts[e.b].x, pts[e.b].y);
         ctx.stroke();
       }
 
+      if (animate) {
+        for (const pu of activity.pulses) {
+          if (!pu.active) continue;
+          const e = edges[pu.edge];
+          const tt = Math.max(0, Math.min(1, pu.t));
+          const x = pts[e.a].x * (1 - tt) + pts[e.b].x * tt;
+          const y = pts[e.a].y * (1 - tt) + pts[e.b].y * tt;
+          ctx.fillStyle = "rgba(212, 255, 246, 0.85)";
+          ctx.beginPath();
+          ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.font = "600 10px ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(125, 211, 192, 0.28)";
+      for (let L = 0; L < layerCount; L++) {
+        let minX = Infinity;
+        let ySum = 0;
+        let count = 0;
+        for (let i = layerStarts[L]; i < layerEnds[L]; i++) {
+          minX = Math.min(minX, pts[i].x);
+          ySum += pts[i].y;
+          count++;
+        }
+        if (!count) continue;
+        ctx.fillText(layerLabels[L], minX - 10, ySum / count);
+      }
+
       for (let i = 0; i < pts.length; i++) {
         const p = pts[i];
-        const waveGlow = animate ? combinedLayerGlow(waves, p.layer) : 0;
-        const spark = animate ? sparks.nodeEnergy[i] : 0;
-        const glow = Math.max(waveGlow * 0.85, spark);
-        const r = 1.4 + glow * 3.6;
-        const alpha = 0.22 + density * 0.22 + glow * 0.65;
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 2.2);
-        g.addColorStop(0, `rgba(184, 255, 240, ${alpha})`);
-        g.addColorStop(0.4, `rgba(125, 211, 192, ${alpha * 0.7})`);
-        g.addColorStop(1, "rgba(125, 211, 192, 0)");
-        ctx.fillStyle = g;
+        const waveGlow = animate ? layerGlowCache[p.layer] : 0;
+        const spark = animate ? activity.nodeEnergy[i] : 0;
+        const isDropped = animate && activity.dropped[i] === 1;
+        const glow = Math.max(waveGlow * 0.85, spark * spark);
+        const r = (1.35 + glow * 2.8) * (isDropped ? 0.55 : 1);
+        const alpha =
+          (0.16 + density * 0.14 + glow * 0.45) * (isDropped ? 0.25 : 1);
+        // Solid soft disc — cheaper than fresh radial gradients every neuron
+        ctx.fillStyle = `rgba(125, 211, 192, ${alpha * 0.55})`;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, r * 2.2, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, r * 2.0, 0, Math.PI * 2);
         ctx.fill();
+        if (glow > 0.08) {
+          ctx.fillStyle = `rgba(212, 255, 246, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r * 0.7, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     };
 
     if (reducedMotion) {
-      drawNetwork(0, 0, ambient ? 0.45 : Math.max(0.35, scrollAtmosphere.networkDensity), false, 0.5);
-      return () => window.removeEventListener("resize", resize);
+      drawNetwork(
+        0,
+        0,
+        ambient ? 0.45 : Math.max(0.35, scrollAtmosphere.networkDensity),
+        false,
+        0.5,
+      );
+      return () => {
+        window.removeEventListener("resize", resize);
+        document.removeEventListener("visibilitychange", onVisibility);
+      };
     }
 
     const tick = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
+      if (!visible) return;
+      const rawDt = now - last;
       last = now;
+      acc += rawDt;
+      if (acc < frameBudget) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const dt = Math.min(0.05, acc / 1000);
+      acc = 0;
+
       const time = now * 0.001;
-      const density = ambient ? 0.45 : scrollAtmosphere.networkDensity;
-      const pulseEnergy = ambient ? 0.4 : scrollAtmosphere.pulseEnergy;
+      const density = ambient ? 0.32 : scrollAtmosphere.networkDensity;
+      const pulseEnergy = ambient ? 0.22 : scrollAtmosphere.pulseEnergy * 0.65;
       const amp = ambient ? 0.004 : 0.003 + scrollAtmosphere.driftAmount * 0.005;
       const travel = ambient ? 0.5 : getScrollProgress();
 
@@ -145,8 +239,9 @@ export function NeuralFallback({ ambient = true }: Props) {
         const slot = waves.find((wv) => !wv.active);
         if (slot) {
           slot.active = true;
-          slot.front = Math.random() < 0.2 ? Math.random() * 1.1 : -0.3;
-          slot.speed = (layerCount / (1.2 + Math.random() * 0.6)) * (0.9 + pulseEnergy * 0.35);
+          slot.front = -0.3;
+          slot.speed =
+            (layerCount / (1.4 + Math.random() * 0.5)) * (0.9 + pulseEnergy * 0.35);
         }
       }
 
@@ -156,7 +251,13 @@ export function NeuralFallback({ ambient = true }: Props) {
         if (wv.front > layerCount + 0.5) wv.active = false;
       }
 
-      tickTrainingSparks(sparks, edges, dt, pulseEnergy, ambient ? 0.35 : scrollAtmosphere.scrollDepth);
+      tickNeuralActivity(
+        activity,
+        edges,
+        dt,
+        pulseEnergy,
+        ambient ? 0.35 : scrollAtmosphere.scrollDepth,
+      );
 
       drawNetwork(time, amp, density, true, travel);
       raf = requestAnimationFrame(tick);
@@ -167,6 +268,7 @@ export function NeuralFallback({ ambient = true }: Props) {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [ambient, reducedMotion]);
 

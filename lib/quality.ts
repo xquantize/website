@@ -31,10 +31,13 @@ export function useQualityTier(): QualityTier {
 
 /** Device-tier knobs for the neural background (WebGL + fallback). */
 export const QUALITY = {
-  dpr: { high: 1.5, medium: 1.25, low: 1 } as const,
-  bloom: { high: true, medium: true, low: false } as const,
+  /** Cap pixel ratio — full retina WebGL + bloom tanks scroll smoothness */
+  dpr: { high: 1.25, medium: 1, low: 1 } as const,
+  bloom: { high: true, medium: false, low: false } as const,
   /** WebGL neural field — low uses Canvas2D fallback instead */
   neuralWebGL: { high: true, medium: true, low: false } as const,
   /** Activation waves / glow (WebGL) */
   neuralWaves: { high: true, medium: true, low: false } as const,
+  /** Synaptic pulse pool size */
+  neuralPulses: { high: 18, medium: 12, low: 0 } as const,
 } as const;

@@ -9,10 +9,9 @@ export const SCENE = {
   cameraZ: 10.5,
   fov: 42,
   /**
-   * ~4 layers in view as a readable MLP plate; scroll slides the whole plate
-   * upward so layers clearly enter/leave (not a single fixed row of dots).
+   * Classic 3-in MLP plate; scroll slides layers through the viewport.
    */
-  travelYStart: 3.2,
-  travelYEnd: -3.6,
+  travelYStart: 3.6,
+  travelYEnd: -3.8,
   parallaxStrength: { x: 0.05, y: 0.02 },
 } as const;

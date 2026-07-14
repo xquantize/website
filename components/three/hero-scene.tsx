@@ -20,14 +20,16 @@ export function HeroScene({ tier }: Props) {
   return (
     <Canvas
       gl={{
-        antialias: tier === "high",
+        antialias: false,
         alpha: true,
         powerPreference: "high-performance",
         stencil: false,
+        depth: true,
       }}
       dpr={[1, dprMax]}
       camera={{ fov: SCENE.fov, near: 0.1, far: 100, position: [0, 0, SCENE.cameraZ] }}
       style={{ background: "transparent" }}
+      performance={{ min: 0.5 }}
     >
       <SceneLoop />
       <NeuralField tier={tier} />
@@ -35,7 +37,7 @@ export function HeroScene({ tier }: Props) {
       <SceneFog />
 
       {bloom && (
-        <EffectComposer multisampling={tier === "high" ? 4 : 0}>
+        <EffectComposer multisampling={0} enableNormalPass={false}>
           <AtmosphereBloom />
         </EffectComposer>
       )}

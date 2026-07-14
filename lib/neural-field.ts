@@ -25,6 +25,10 @@ export type NeuralEdge = {
   b: number;
   fromLayer: number;
   toLayer: number;
+  /** Connection strength 0.2–1 (visual thickness + pulse gain) */
+  weight: number;
+  /** +1 excitatory / −1 inhibitory */
+  sign: 1 | -1;
 };
 
 export type ActivationWave = {
@@ -45,47 +49,53 @@ export type LayeredNetworkConfig = {
   /** Vertical span from first to last layer */
   height: number;
   depthJitter: number;
+  /** Fraction of hidden neurons silenced each forward batch */
+  dropout: number;
 };
 
 /**
- * Desktop WebGL — classic MLP diagram: even rows, generous vertical gaps,
- * wide enough to read in the right-hand column.
+ * Desktop WebGL — classic teaching MLP (3 inputs, fully connected layers).
+ * Spacing uses equal neuron pitch so it reads like a textbook diagram.
  */
 export const NEURAL_FIELD: Record<QualityTier, LayeredNetworkConfig> = {
   high: {
-    layers: [5, 7, 6, 7, 5, 4],
-    linksPerNode: 2,
-    maxWaves: 3,
-    columnWidth: 4.0,
-    height: 14,
-    depthJitter: 0.08,
+    layers: [3, 5, 4, 2],
+    linksPerNode: 8,
+    maxWaves: 1,
+    columnWidth: 4.4,
+    height: 11.5,
+    depthJitter: 0,
+    dropout: 0.22,
   },
   medium: {
-    layers: [5, 6, 6, 5, 4],
-    linksPerNode: 2,
-    maxWaves: 2,
-    columnWidth: 3.6,
-    height: 12,
-    depthJitter: 0.06,
+    layers: [3, 5, 2],
+    linksPerNode: 8,
+    maxWaves: 1,
+    columnWidth: 4.0,
+    height: 9.5,
+    depthJitter: 0,
+    dropout: 0.2,
   },
   low: {
-    layers: [4, 6, 5, 4],
-    linksPerNode: 2,
-    maxWaves: 2,
-    columnWidth: 3.2,
-    height: 10,
-    depthJitter: 0.05,
+    layers: [3, 4, 2],
+    linksPerNode: 8,
+    maxWaves: 1,
+    columnWidth: 3.6,
+    height: 8,
+    depthJitter: 0,
+    dropout: 0.18,
   },
 };
 
-/** Mobile / low-tier Canvas2D — vertical layers, ambient full-frame */
+/** Mobile / low-tier Canvas2D — same classic 3-in diagram */
 export const NEURAL_FALLBACK: LayeredNetworkConfig = {
-  layers: [4, 5, 5, 4, 3],
-  linksPerNode: 2,
-  maxWaves: 2,
+  layers: [3, 5, 2],
+  linksPerNode: 8,
+  maxWaves: 1,
   columnWidth: 1,
   height: 1,
   depthJitter: 0,
+  dropout: 0.2,
 };
 
 export type LayeredNetwork = {
@@ -94,11 +104,20 @@ export type LayeredNetwork = {
   layerCount: number;
   layerStarts: number[];
   layerEnds: number[];
+  layerLabels: string[];
+  dropout: number;
 };
 
+/** in / h1 / h2 / … / out */
+export function layerLabel(index: number, layerCount: number): string {
+  if (index === 0) return "in";
+  if (index === layerCount - 1) return "out";
+  return `h${index}`;
+}
+
 /**
- * Build an MLP layout: layers top→bottom (Y), nodes across X within each layer,
- * light Z jitter. Edges only between adjacent layers.
+ * Build a classic MLP diagram: equal neuron pitch within layers (centered),
+ * equal layer spacing top→bottom, dense adjacent-layer connections.
  */
 export function createLayeredNetwork(
   cfg: LayeredNetworkConfig,
@@ -111,30 +130,35 @@ export function createLayeredNetwork(
   const layerStarts: number[] = [];
   const layerEnds: number[] = [];
   const layerCount = cfg.layers.length;
-  const maxCount = Math.max(...cfg.layers);
+  const layerLabels = Array.from({ length: layerCount }, (_, i) =>
+    layerLabel(i, layerCount),
+  );
+  const maxCount = Math.max(...cfg.layers, 2);
 
   for (let L = 0; L < layerCount; L++) {
     const count = cfg.layers[L];
     layerStarts.push(nodes.length);
-    // 0 = top, 1 = bottom
+    // 0 = top, 1 = bottom — equal gaps between layers
     const t = layerCount === 1 ? 0.5 : L / (layerCount - 1);
 
     for (let i = 0; i < count; i++) {
-      const v = count === 1 ? 0.5 : i / (count - 1);
+      // Equal pitch across the widest layer; narrower layers stay centered
+      const pitch = 1 / (maxCount - 1);
+      const span = (count - 1) * pitch;
+      const u = count === 1 ? 0.5 : 0.5 - span / 2 + i * pitch;
 
       if (normalized2d) {
         nodes.push({
-          x: 0.62 + (v - 0.5) * 0.46,
-          y: 0.1 + t * 0.8,
+          x: 0.58 + (u - 0.5) * 0.5,
+          y: 0.14 + t * 0.72,
           z: 0,
           layer: L,
           phase: rng() * Math.PI * 2,
           speed: 0.08 + rng() * 0.12,
         });
       } else {
-        // Even horizontal spacing per layer — classic clean MLP diagram
         nodes.push({
-          x: (v - 0.5) * cfg.columnWidth,
+          x: (u - 0.5) * cfg.columnWidth,
           y: (0.5 - t) * cfg.height,
           z: (rng() * 2 - 1) * cfg.depthJitter,
           layer: L,
@@ -152,8 +176,9 @@ export function createLayeredNetwork(
     const a1 = layerEnds[L];
     const b0 = layerStarts[L + 1];
     const b1 = layerEnds[L + 1];
+    const nextCount = b1 - b0;
 
-    // Nearest-X targets only — no wraparound / long diagonals that cross the column.
+    // Fully (or nearly) connected between adjacent layers — textbook look
     for (let i = a0; i < a1; i++) {
       const srcX = nodes[i].x;
       const ranked: { j: number; d: number }[] = [];
@@ -161,14 +186,33 @@ export function createLayeredNetwork(
         ranked.push({ j, d: Math.abs(nodes[j].x - srcX) });
       }
       ranked.sort((a, b) => a.d - b.d || a.j - b.j);
-      const nLinks = Math.min(cfg.linksPerNode, ranked.length);
+      const nLinks = Math.min(cfg.linksPerNode, nextCount, ranked.length);
       for (let k = 0; k < nLinks; k++) {
-        edges.push({ a: i, b: ranked[k].j, fromLayer: L, toLayer: L + 1 });
+        // Closer (aligned) connections slightly stronger; few inhibitory
+        const proximity = 1 - k / Math.max(1, nLinks - 1 || 1);
+        const weight = Math.min(1, 0.35 + proximity * 0.45 + rng() * 0.2);
+        const sign: 1 | -1 = rng() < 0.12 ? -1 : 1;
+        edges.push({
+          a: i,
+          b: ranked[k].j,
+          fromLayer: L,
+          toLayer: L + 1,
+          weight,
+          sign,
+        });
       }
     }
   }
 
-  return { nodes, edges, layerCount, layerStarts, layerEnds };
+  return {
+    nodes,
+    edges,
+    layerCount,
+    layerStarts,
+    layerEnds,
+    layerLabels,
+    dropout: cfg.dropout,
+  };
 }
 
 export function createWavePool(maxWaves: number): ActivationWave[] {
@@ -179,9 +223,9 @@ export function createWavePool(maxWaves: number): ActivationWave[] {
   }));
 }
 
-/** Spawn interval — calmer at surface, more frequent at depth */
+/** Spawn interval — quieter sweeps, still drifts with scroll depth */
 export function waveSpawnInterval(scrollDepth: number): number {
-  return 2.8 - scrollDepth * 2.0;
+  return 4.2 - scrollDepth * 1.4;
 }
 
 export function smoothstep(edge0: number, edge1: number, x: number): number {
@@ -231,75 +275,278 @@ export function combinedEdgeGlow(
   return Math.min(1, max);
 }
 
-/** Per-node / per-edge energy for stochastic "training" firings */
-export type TrainingSparks = {
-  nodeEnergy: Float32Array;
-  edgeEnergy: Float32Array;
-  /** Outgoing edge indices per node for cascade */
-  outgoing: number[][];
+/** Per-neuron / synapse activity — spikes, traveling pulses, forward passes */
+export type SynapsePulse = {
+  edge: number;
+  /** 0 at pre-synaptic, 1 at post-synaptic */
+  t: number;
+  speed: number;
+  active: boolean;
+  /** 1 = forward, -1 = backprop-style */
+  dir: 1 | -1;
 };
 
-export function createTrainingSparks(
+export type NeuralActivity = {
+  /** Instantaneous membrane / activation 0–1 */
+  nodeEnergy: Float32Array;
+  /** Lingering synapse glow after a pulse passes */
+  edgeEnergy: Float32Array;
+  /** 1 = silenced this batch (hidden layers only) */
+  dropped: Uint8Array;
+  outgoing: number[][];
+  incoming: number[][];
+  pulses: SynapsePulse[];
+  /** Ring cursor for O(1)-ish free pulse slot search */
+  pulseCursor: number;
+  /** Layer index arrays for batch input firing */
+  layerStarts: number[];
+  layerEnds: number[];
+  layerCount: number;
+  dropout: number;
+  batchTimer: number;
+  sparseTimer: number;
+};
+
+export function createNeuralActivity(
   nodes: NeuralNode[],
   edges: NeuralEdge[],
-): TrainingSparks {
+  layerStarts: number[],
+  layerEnds: number[],
+  maxPulses = 48,
+  dropout = 0.2,
+): NeuralActivity {
   const outgoing: number[][] = Array.from({ length: nodes.length }, () => []);
+  const incoming: number[][] = Array.from({ length: nodes.length }, () => []);
   for (let i = 0; i < edges.length; i++) {
     outgoing[edges[i].a].push(i);
+    incoming[edges[i].b].push(i);
   }
   return {
     nodeEnergy: new Float32Array(nodes.length),
     edgeEnergy: new Float32Array(edges.length),
+    dropped: new Uint8Array(nodes.length),
     outgoing,
+    incoming,
+    pulses: Array.from({ length: maxPulses }, () => ({
+      edge: 0,
+      t: 0,
+      speed: 1,
+      active: false,
+      dir: 1,
+    })),
+    pulseCursor: 0,
+    layerStarts: layerStarts.slice(),
+    layerEnds: layerEnds.slice(),
+    layerCount: layerStarts.length,
+    dropout,
+    batchTimer: 0.6,
+    sparseTimer: 0.2,
   };
 }
 
+/** Silence a random fraction of hidden neurons for the next forward batch. */
+export function resampleDropout(activity: NeuralActivity): void {
+  const { dropped, layerStarts, layerEnds, layerCount, dropout } = activity;
+  dropped.fill(0);
+  if (dropout <= 0 || layerCount < 3) return;
+  for (let L = 1; L < layerCount - 1; L++) {
+    for (let i = layerStarts[L]; i < layerEnds[L]; i++) {
+      if (Math.random() < dropout) dropped[i] = 1;
+    }
+  }
+}
+
+function spawnPulse(
+  activity: NeuralActivity,
+  edge: number,
+  dir: 1 | -1,
+  speed: number,
+): void {
+  const { pulses } = activity;
+  const n = pulses.length;
+  for (let i = 0; i < n; i++) {
+    const idx = (activity.pulseCursor + i) % n;
+    const slot = pulses[idx];
+    if (slot.active) continue;
+    slot.active = true;
+    slot.edge = edge;
+    slot.t = dir === 1 ? 0 : 1;
+    slot.speed = speed;
+    slot.dir = dir;
+    activity.pulseCursor = (idx + 1) % n;
+    return;
+  }
+}
+
+/** ReLU-style: only positive activations register; dropped units stay silent. */
+function spikeNeuron(activity: NeuralActivity, i: number, strength = 1): boolean {
+  if (activity.dropped[i]) return false;
+  if (strength <= 0) return false;
+  activity.nodeEnergy[i] = Math.max(activity.nodeEnergy[i], Math.min(1, strength));
+  return true;
+}
+
 /**
- * Random node firings + short cascades along edges — reads like a network training.
- * Rate rises with pulseEnergy / scrollDepth.
+ * Realistic-ish activity:
+ * - ReLU: only excitatory (positive) post-synaptic activations fire
+ * - Dropout: randomly silence a fraction of hidden units each batch
+ * - Fast spike / exponential decay on neurons
+ * - Synaptic pulses travel along edges and recruit the next cell
+ * - Periodic input-layer "batch" → cascade as a forward pass
+ * - Sparse spontaneous spikes + occasional reverse (backprop) flashes
  */
-export function tickTrainingSparks(
-  sparks: TrainingSparks,
+export function tickNeuralActivity(
+  activity: NeuralActivity,
   edges: NeuralEdge[],
   dt: number,
   pulseEnergy: number,
   scrollDepth: number,
 ): void {
-  const { nodeEnergy, edgeEnergy, outgoing } = sparks;
-  const decay = Math.exp(-dt * (3.2 + pulseEnergy * 1.4));
-  for (let i = 0; i < nodeEnergy.length; i++) nodeEnergy[i] *= decay;
-  for (let i = 0; i < edgeEnergy.length; i++) edgeEnergy[i] *= decay;
+  const {
+    nodeEnergy,
+    edgeEnergy,
+    dropped,
+    outgoing,
+    pulses,
+    layerStarts,
+    layerEnds,
+    layerCount,
+  } = activity;
 
-  // Stochastic firings — more frequent deeper in the page
-  // Stochastic firings — calm surface, busier deeper; still reads as training
-  const fireChance = (0.35 + pulseEnergy * 1.4 + scrollDepth * 1.0) * dt;
-  const bursts = Math.random() < 0.35 + pulseEnergy * 0.3 ? 2 : 1;
-  for (let b = 0; b < bursts; b++) {
-    if (Math.random() > fireChance) continue;
-    const i = (Math.random() * nodeEnergy.length) | 0;
-    nodeEnergy[i] = Math.max(nodeEnergy[i], 0.75 + Math.random() * 0.25);
+  // Membrane decay (faster fade = quieter field) + residual synapse glow
+  const nodeDecay = Math.exp(-dt * (5.8 + pulseEnergy * 1.0));
+  const edgeDecay = Math.exp(-dt * (3.2 + pulseEnergy * 0.7));
+  for (let i = 0; i < nodeEnergy.length; i++) {
+    if (dropped[i]) {
+      nodeEnergy[i] *= nodeDecay * 0.85;
+      continue;
+    }
+    nodeEnergy[i] *= nodeDecay;
+  }
+  for (let i = 0; i < edgeEnergy.length; i++) edgeEnergy[i] *= edgeDecay;
 
-    // Forward cascade along a few outgoing edges
-    const outs = outgoing[i];
-    const nCascade = Math.min(outs.length, 1 + ((Math.random() * 2) | 0));
-    for (let k = 0; k < nCascade; k++) {
-      const ei = outs[(Math.random() * outs.length) | 0];
-      if (ei == null) continue;
-      edgeEnergy[ei] = Math.max(edgeEnergy[ei], 0.7 + Math.random() * 0.3);
-      const tgt = edges[ei].b;
-      nodeEnergy[tgt] = Math.max(nodeEnergy[tgt], 0.45 + Math.random() * 0.4);
+  // Advance traveling pulses
+  for (const p of pulses) {
+    if (!p.active) continue;
+    p.t += dt * p.speed * p.dir;
+    const e = edges[p.edge];
+    // Brighten edge while pulse is on it (stronger weights glow more)
+    const along = p.dir === 1 ? p.t : 1 - p.t;
+    const bell = Math.sin(Math.min(1, Math.max(0, along)) * Math.PI);
+    edgeEnergy[p.edge] = Math.max(
+      edgeEnergy[p.edge],
+      (0.18 + bell * 0.45) * (0.5 + e.weight * 0.4),
+    );
+
+    const reached = p.dir === 1 ? p.t >= 1 : p.t <= 0;
+    if (reached) {
+      p.active = false;
+      const post = p.dir === 1 ? e.b : e.a;
+      // Signed weight × pulse → ReLU gate (inhibitory edges don't fire)
+      const raw = e.sign * e.weight * (0.45 + Math.random() * 0.25);
+      if (!spikeNeuron(activity, post, raw)) continue;
+
+      const nextEdges = p.dir === 1 ? outgoing[post] : activity.incoming[post];
+      if (nextEdges.length && Math.random() < 0.28 + pulseEnergy * 0.2) {
+        const ei = nextEdges[(Math.random() * nextEdges.length) | 0];
+        const nextNode = p.dir === 1 ? edges[ei].b : edges[ei].a;
+        if (dropped[nextNode]) continue;
+        spawnPulse(
+          activity,
+          ei,
+          p.dir,
+          (1.8 + Math.random() * 1.0) *
+            (0.85 + pulseEnergy * 0.25) *
+            (0.75 + edges[ei].weight * 0.35),
+        );
+      }
     }
   }
 
-  // Occasional reverse "backprop" flash on a hot edge
-  if (Math.random() < (0.15 + pulseEnergy * 0.35) * dt * 8) {
-    const ei = (Math.random() * edges.length) | 0;
-    if (edgeEnergy[ei] > 0.2 || Math.random() < 0.25) {
-      edgeEnergy[ei] = Math.max(edgeEnergy[ei], 0.85);
-      nodeEnergy[edges[ei].a] = Math.max(nodeEnergy[edges[ei].a], 0.55);
-      nodeEnergy[edges[ei].b] = Math.max(nodeEnergy[edges[ei].b], 0.55);
+  const fireOut = (nodeIndex: number, strength: number) => {
+    if (!spikeNeuron(activity, nodeIndex, strength)) return;
+    const outs = outgoing[nodeIndex];
+    if (!outs.length) return;
+    // Quiet fan-out — at most 2 synapses per spike
+    let fired = 0;
+    const start = (Math.random() * outs.length) | 0;
+    for (let k = 0; k < outs.length && fired < 2; k++) {
+      const ei = outs[(start + k) % outs.length];
+      const e = edges[ei];
+      if (e.sign < 0) continue;
+      if (dropped[e.b]) continue;
+      if (Math.random() < 0.4 + pulseEnergy * 0.15 + e.weight * 0.1) {
+        spawnPulse(
+          activity,
+          ei,
+          1,
+          (1.7 + Math.random() * 1.0) *
+            (0.9 + pulseEnergy * 0.2) *
+            (0.75 + e.weight * 0.35),
+        );
+        fired++;
+      }
+    }
+  };
+
+  // --- Forward pass: quieter batches, often a single input neuron ---
+  activity.batchTimer -= dt;
+  const batchInterval = 4.0 - scrollDepth * 0.9 - pulseEnergy * 0.35;
+  if (activity.batchTimer <= 0) {
+    activity.batchTimer = batchInterval * (0.9 + Math.random() * 0.55);
+    resampleDropout(activity);
+    const a0 = layerStarts[0];
+    const a1 = layerEnds[0];
+    const batchSize = Math.random() < 0.55 ? 1 : 2;
+    for (let n = 0; n < batchSize; n++) {
+      fireOut(a0 + ((Math.random() * (a1 - a0)) | 0), 0.55 + Math.random() * 0.25);
     }
   }
+
+  // --- Rare spontaneous spikes ---
+  activity.sparseTimer -= dt;
+  if (activity.sparseTimer <= 0) {
+    activity.sparseTimer = (0.85 - pulseEnergy * 0.2) * (0.85 + Math.random());
+    if (Math.random() < 0.28 + pulseEnergy * 0.15) {
+      const i = (Math.random() * nodeEnergy.length) | 0;
+      if (!dropped[i]) fireOut(i, 0.35 + Math.random() * 0.25);
+    }
+  }
+
+  // --- Occasional backprop flash (rare) ---
+  if (Math.random() < (0.015 + pulseEnergy * 0.03) * dt * 6) {
+    const L = layerCount - 1;
+    const b0 = layerStarts[L];
+    const b1 = layerEnds[L];
+    const i = b0 + ((Math.random() * (b1 - b0)) | 0);
+    if (spikeNeuron(activity, i, 0.55)) {
+      const ins = activity.incoming[i];
+      if (ins.length) {
+        spawnPulse(activity, ins[(Math.random() * ins.length) | 0], -1, 2.0 + Math.random());
+      }
+    }
+  }
+}
+
+/** @deprecated use createNeuralActivity / tickNeuralActivity */
+export type TrainingSparks = NeuralActivity;
+
+export function createTrainingSparks(
+  nodes: NeuralNode[],
+  edges: NeuralEdge[],
+): NeuralActivity {
+  // Fallback path without layer meta — treat as single layer
+  return createNeuralActivity(nodes, edges, [0], [nodes.length], 32, 0);
+}
+
+export function tickTrainingSparks(
+  sparks: NeuralActivity,
+  edges: NeuralEdge[],
+  dt: number,
+  pulseEnergy: number,
+  scrollDepth: number,
+): void {
+  tickNeuralActivity(sparks, edges, dt, pulseEnergy, scrollDepth);
 }
 
 export function driftedPosition(
@@ -315,11 +562,11 @@ export function driftedPosition(
   };
 }
 
-/** Soft circular sprite for PointsMaterial (avoids square points). */
+/** Soft circular sprite — bright soma core + soft dendritic halo. */
 export function createCircleSpriteTexture(
   makeCanvas: () => HTMLCanvasElement | OffscreenCanvas = () => document.createElement("canvas"),
 ): { canvas: HTMLCanvasElement | OffscreenCanvas } {
-  const size = 64;
+  const size = 96;
   const canvas = makeCanvas();
   canvas.width = size;
   canvas.height = size;
@@ -330,13 +577,51 @@ export function createCircleSpriteTexture(
   if (!ctx) return { canvas };
 
   ctx.clearRect(0, 0, size, size);
-  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  g.addColorStop(0, "rgba(255,255,255,1)");
-  g.addColorStop(0.25, "rgba(255,255,255,0.9)");
-  g.addColorStop(0.55, "rgba(255,255,255,0.35)");
-  g.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = g;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  // Outer halo
+  const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, size / 2);
+  halo.addColorStop(0, "rgba(255,255,255,0)");
+  halo.addColorStop(0.35, "rgba(255,255,255,0.15)");
+  halo.addColorStop(0.65, "rgba(255,255,255,0.45)");
+  halo.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = halo;
   ctx.fillRect(0, 0, size, size);
 
+  // Soma core
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.28);
+  core.addColorStop(0, "rgba(255,255,255,1)");
+  core.addColorStop(0.4, "rgba(255,255,255,0.95)");
+  core.addColorStop(0.75, "rgba(255,255,255,0.35)");
+  core.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+
+  return { canvas };
+}
+
+/** Tiny monospace label sprite for layer tags (in / h1 / out). */
+export function createLayerLabelTexture(
+  label: string,
+  makeCanvas: () => HTMLCanvasElement | OffscreenCanvas = () => document.createElement("canvas"),
+): { canvas: HTMLCanvasElement | OffscreenCanvas } {
+  const canvas = makeCanvas();
+  canvas.width = 96;
+  canvas.height = 48;
+  const ctx = canvas.getContext("2d") as
+    | CanvasRenderingContext2D
+    | OffscreenCanvasRenderingContext2D
+    | null;
+  if (!ctx) return { canvas };
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "600 22px ui-monospace, SFMono-Regular, Menlo, monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(125, 211, 192, 0.55)";
+  ctx.fillText(label, canvas.width / 2, canvas.height / 2 + 1);
   return { canvas };
 }
