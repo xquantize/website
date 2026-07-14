@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SCENE } from "@/lib/constants";
 import { EASE } from "@/lib/motion";
 import {
   applyAtmosphereToDom,
@@ -14,6 +13,10 @@ import { SCROLL_LAYOUT_SYNC_EVENT } from "@/lib/scroll-layout-sync";
 
 gsap.registerPlugin(ScrollTrigger);
 
+/**
+ * Mood / density / hero fade only.
+ * Network travel is driven inside NeuralField from Lenis scroll each frame.
+ */
 export function ScrollAtmosphere() {
   useEffect(() => {
     resetScrollAtmosphere();
@@ -25,102 +28,88 @@ export function ScrollAtmosphere() {
           trigger: ".home-page",
           start: "top top",
           end: "bottom bottom",
-          scrub: 1.2,
+          scrub: 0.7,
           invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            scrollAtmosphere.pageScroll = self.progress;
+          onUpdate: () => {
             applyAtmosphereToDom();
           },
         },
       });
 
-      // Surface → enter the top of the stack
       tl.to(scrollAtmosphere, {
-        cameraZ: 17.2,
-        travelY: SCENE.travelYStart - 1.1,
-        networkDensity: 0.48,
-        pulseEnergy: 0.45,
-        nodeOpacity: 0.78,
-        edgeOpacity: 0.22,
-        bloomIntensity: 0.3,
-        bgBright: 0.96,
-        vignetteStrength: 0.42,
+        cameraZ: 10.3,
+        networkDensity: 0.55,
+        pulseEnergy: 0.55,
+        nodeOpacity: 0.88,
+        edgeOpacity: 0.36,
+        bloomIntensity: 0.34,
+        bgBright: 0.97,
+        vignetteStrength: 0.38,
         scrollDepth: 0.18,
         heroOpacity: 0,
-        fogDensity: 0.02,
-        driftAmount: 0.62,
+        fogDensity: 0.022,
+        driftAmount: 0.4,
         ease: EASE.none,
       })
-        // Work: mid-upper layers
         .to(scrollAtmosphere, {
-          cameraZ: 16.4,
-          travelY: 1.4,
-          networkDensity: 0.68,
-          pulseEnergy: 0.62,
-          nodeOpacity: 0.88,
-          edgeOpacity: 0.28,
-          bloomIntensity: 0.32,
-          bgBright: 1.02,
-          vignetteStrength: 0.36,
-          scrollDepth: 0.32,
-          fogDensity: 0.016,
-          driftAmount: 0.7,
+          cameraZ: 10.1,
+          networkDensity: 0.7,
+          pulseEnergy: 0.7,
+          nodeOpacity: 0.92,
+          edgeOpacity: 0.42,
+          bloomIntensity: 0.36,
+          bgBright: 1.0,
+          vignetteStrength: 0.34,
+          scrollDepth: 0.34,
+          fogDensity: 0.02,
+          driftAmount: 0.48,
           ease: EASE.none,
         })
-        // About: mid stack — training denser
         .to(scrollAtmosphere, {
-          cameraZ: 15.8,
-          travelY: -0.2,
-          networkDensity: 0.78,
-          pulseEnergy: 0.78,
-          nodeOpacity: 0.9,
-          edgeOpacity: 0.32,
-          bloomIntensity: 0.34,
+          cameraZ: 9.9,
+          networkDensity: 0.82,
+          pulseEnergy: 0.82,
+          nodeOpacity: 0.94,
+          edgeOpacity: 0.48,
+          bloomIntensity: 0.38,
           bgBright: 0.98,
-          vignetteStrength: 0.4,
-          scrollDepth: 0.48,
-          fogDensity: 0.018,
-          driftAmount: 0.78,
+          vignetteStrength: 0.38,
+          scrollDepth: 0.52,
+          fogDensity: 0.022,
+          driftAmount: 0.55,
           ease: EASE.none,
         })
-        // Contact: lower layers
         .to(scrollAtmosphere, {
-          cameraZ: 15.2,
-          travelY: -2.2,
+          cameraZ: 9.7,
           networkDensity: 0.92,
           pulseEnergy: 0.92,
-          nodeOpacity: 0.95,
-          edgeOpacity: 0.38,
-          bloomIntensity: 0.36,
-          bgBright: 0.9,
-          vignetteStrength: 0.5,
-          scrollDepth: 0.72,
-          fogDensity: 0.022,
-          driftAmount: 0.85,
+          nodeOpacity: 0.96,
+          edgeOpacity: 0.52,
+          bloomIntensity: 0.38,
+          bgBright: 0.94,
+          vignetteStrength: 0.44,
+          scrollDepth: 0.74,
+          fogDensity: 0.026,
+          driftAmount: 0.6,
           ease: EASE.none,
         })
-        // Footer: deepest
         .to(scrollAtmosphere, {
-          cameraZ: 14.6,
-          travelY: SCENE.travelYEnd,
+          cameraZ: 9.5,
           networkDensity: 1,
           pulseEnergy: 1,
           nodeOpacity: 1,
-          edgeOpacity: 0.42,
-          bloomIntensity: 0.3,
-          bgBright: 0.86,
-          vignetteStrength: 0.58,
-          scrollDepth: 0.9,
-          fogDensity: 0.026,
-          driftAmount: 0.9,
+          edgeOpacity: 0.55,
+          bloomIntensity: 0.32,
+          bgBright: 0.9,
+          vignetteStrength: 0.5,
+          scrollDepth: 0.92,
+          fogDensity: 0.03,
+          driftAmount: 0.65,
           ease: EASE.none,
         });
     });
 
-    const onLayoutSync = () => {
-      applyAtmosphereToDom();
-    };
-
+    const onLayoutSync = () => applyAtmosphereToDom();
     window.addEventListener(SCROLL_LAYOUT_SYNC_EVENT, onLayoutSync);
 
     return () => {

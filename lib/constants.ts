@@ -5,13 +5,14 @@ export const COLORS = {
 } as const;
 
 export const SCENE = {
-  fogDensity: 0.018,
-  cameraZ: 18,
-  /** Narrow FOV keeps the column diagram nearly flat / orthographic-feeling */
-  fov: 32,
-  /** Camera focus Y at top of page (near first layers) → bottom (deeper layers) */
-  travelYStart: 3.6,
-  travelYEnd: -3.8,
-  /** Keep parallax gentle so the right-column network stays framed */
-  parallaxStrength: { x: 0.1, y: 0.06 },
+  fogDensity: 0.02,
+  cameraZ: 10.5,
+  fov: 42,
+  /**
+   * ~4 layers in view as a readable MLP plate; scroll slides the whole plate
+   * upward so layers clearly enter/leave (not a single fixed row of dots).
+   */
+  travelYStart: 3.2,
+  travelYEnd: -3.6,
+  parallaxStrength: { x: 0.05, y: 0.02 },
 } as const;

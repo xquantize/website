@@ -31,6 +31,17 @@ export function registerLenis(lenis: LenisLike | null) {
   lenisRef = lenis;
 }
 
+/** 0–1 page scroll — prefers Lenis when active. */
+export function getScrollProgress(): number {
+  if (typeof window === "undefined") return 0;
+  if (lenisRef && typeof lenisRef.limit === "number" && lenisRef.limit > 0) {
+    const s = lenisRef.scroll ?? lenisRef.actualScroll ?? 0;
+    return Math.max(0, Math.min(1, s / lenisRef.limit));
+  }
+  const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  return Math.max(0, Math.min(1, window.scrollY / max));
+}
+
 function resolveHashTarget(): HTMLElement | null {
   const raw = window.location.hash.replace(/^#/, "");
   if (!raw) return null;

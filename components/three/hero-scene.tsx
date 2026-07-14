@@ -26,7 +26,7 @@ export function HeroScene({ tier }: Props) {
         stencil: false,
       }}
       dpr={[1, dprMax]}
-      camera={{ fov: SCENE.fov, near: 0.1, far: 60, position: [0, 0, SCENE.cameraZ] }}
+      camera={{ fov: SCENE.fov, near: 0.1, far: 100, position: [0, 0, SCENE.cameraZ] }}
       style={{ background: "transparent" }}
     >
       <SceneLoop />

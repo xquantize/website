@@ -48,33 +48,33 @@ export type LayeredNetworkConfig = {
 };
 
 /**
- * Desktop WebGL — fewer nodes, generous spacing so structure reads clearly
- * inside the right-side column viewport.
+ * Desktop WebGL — classic MLP diagram: even rows, generous vertical gaps,
+ * wide enough to read in the right-hand column.
  */
 export const NEURAL_FIELD: Record<QualityTier, LayeredNetworkConfig> = {
   high: {
-    layers: [6, 8, 7, 6, 5, 4, 3],
-    linksPerNode: 2,
-    maxWaves: 4,
-    columnWidth: 4.8,
-    height: 11.5,
-    depthJitter: 0.22,
-  },
-  medium: {
-    layers: [5, 7, 6, 5, 4, 3],
+    layers: [5, 7, 6, 7, 5, 4],
     linksPerNode: 2,
     maxWaves: 3,
-    columnWidth: 4.4,
-    height: 10,
-    depthJitter: 0.18,
+    columnWidth: 4.0,
+    height: 14,
+    depthJitter: 0.08,
   },
-  low: {
-    layers: [4, 6, 5, 4, 3],
+  medium: {
+    layers: [5, 6, 6, 5, 4],
     linksPerNode: 2,
     maxWaves: 2,
-    columnWidth: 4.0,
-    height: 8.5,
-    depthJitter: 0.14,
+    columnWidth: 3.6,
+    height: 12,
+    depthJitter: 0.06,
+  },
+  low: {
+    layers: [4, 6, 5, 4],
+    linksPerNode: 2,
+    maxWaves: 2,
+    columnWidth: 3.2,
+    height: 10,
+    depthJitter: 0.05,
   },
 };
 
@@ -121,30 +121,25 @@ export function createLayeredNetwork(
 
     for (let i = 0; i < count; i++) {
       const v = count === 1 ? 0.5 : i / (count - 1);
-      // Layer width grows top→bottom so the stack expands downward toward the screen edge.
-      const layerWidth = cfg.columnWidth * (0.42 + t * 0.58);
 
       if (normalized2d) {
-        const w = 0.26 + t * 0.36;
-        // Right-bias ambient graph toward the right half
         nodes.push({
-          x: 0.72 + (v - 0.5) * w,
-          y: 0.12 + t * 0.76,
+          x: 0.62 + (v - 0.5) * 0.46,
+          y: 0.1 + t * 0.8,
           z: 0,
           layer: L,
           phase: rng() * Math.PI * 2,
           speed: 0.08 + rng() * 0.12,
         });
       } else {
-        // Centered in the column; width grows top→bottom so you travel into a widening stack
-        const x = (v - 0.5) * layerWidth;
+        // Even horizontal spacing per layer — classic clean MLP diagram
         nodes.push({
-          x,
+          x: (v - 0.5) * cfg.columnWidth,
           y: (0.5 - t) * cfg.height,
           z: (rng() * 2 - 1) * cfg.depthJitter,
           layer: L,
           phase: rng() * Math.PI * 2,
-          speed: 0.1 + rng() * 0.18,
+          speed: 0.08 + rng() * 0.14,
         });
       }
     }
@@ -276,8 +271,9 @@ export function tickTrainingSparks(
   for (let i = 0; i < edgeEnergy.length; i++) edgeEnergy[i] *= decay;
 
   // Stochastic firings — more frequent deeper in the page
-  const fireChance = (1.1 + pulseEnergy * 2.4 + scrollDepth * 1.6) * dt;
-  const bursts = 1 + (Math.random() < 0.45 + pulseEnergy * 0.4 ? 1 : 0) + (Math.random() < scrollDepth * 0.4 ? 1 : 0);
+  // Stochastic firings — calm surface, busier deeper; still reads as training
+  const fireChance = (0.35 + pulseEnergy * 1.4 + scrollDepth * 1.0) * dt;
+  const bursts = Math.random() < 0.35 + pulseEnergy * 0.3 ? 2 : 1;
   for (let b = 0; b < bursts; b++) {
     if (Math.random() > fireChance) continue;
     const i = (Math.random() * nodeEnergy.length) | 0;

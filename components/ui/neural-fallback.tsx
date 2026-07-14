@@ -14,6 +14,7 @@ import {
 } from "@/lib/neural-field";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
 import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
+import { getScrollProgress } from "@/lib/scroll-layout-sync";
 
 type Props = {
   /** When true, ignore scroll atmosphere and stay calm/static-ish */
@@ -133,7 +134,7 @@ export function NeuralFallback({ ambient = true }: Props) {
       const density = ambient ? 0.45 : scrollAtmosphere.networkDensity;
       const pulseEnergy = ambient ? 0.4 : scrollAtmosphere.pulseEnergy;
       const amp = ambient ? 0.004 : 0.003 + scrollAtmosphere.driftAmount * 0.005;
-      const travel = ambient ? 0.5 : scrollAtmosphere.scrollDepth;
+      const travel = ambient ? 0.5 : getScrollProgress();
 
       spawnTimer -= dt;
       const interval =
