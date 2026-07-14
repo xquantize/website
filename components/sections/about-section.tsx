@@ -40,6 +40,14 @@ export function AboutSection() {
                 GitHub
               </a>
               <a
+                href={SITE.tensortonic}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pill pill--link font-mono pointer-events-auto"
+              >
+                TensorTonic
+              </a>
+              <a
                 href={SITE.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"

@@ -150,11 +150,21 @@ export function CommandPalette() {
               <span className="cmd-palette__hint">Live demo</span>
             </Command.Item>
             <Command.Item
-              value="github profile repository"
+              value="github profile repository xquantize"
               className="cmd-palette__item"
               onSelect={() => run(() => window.open(SITE.github, "_blank", "noopener,noreferrer"))}
             >
               <span>GitHub</span>
+              <span className="cmd-palette__hint">External</span>
+            </Command.Item>
+            <Command.Item
+              value="tensortonic profile xquantize"
+              className="cmd-palette__item"
+              onSelect={() =>
+                run(() => window.open(SITE.tensortonic, "_blank", "noopener,noreferrer"))
+              }
+            >
+              <span>TensorTonic</span>
               <span className="cmd-palette__hint">External</span>
             </Command.Item>
             <Command.Item

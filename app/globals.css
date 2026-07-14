@@ -1390,14 +1390,16 @@ html.route-lab .neural-bg {
 .contact-panel__actions {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-md);
   margin-top: var(--space-xs);
+  width: 100%;
 }
 
 .contact-panel__primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 44px;
   padding: 0.7rem 1.1rem;
   font-size: 0.875rem;
@@ -1418,26 +1420,47 @@ html.route-lab .neural-bg {
   outline-offset: 3px;
 }
 
-.contact-panel__secondary {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+.contact-panel__socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.65rem 1.1rem;
+}
+
+.contact-panel__social {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   text-decoration: none;
   color: var(--text-body);
-  border-bottom: 1px solid rgba(245, 240, 232, 0.22);
-  padding-bottom: 0.15rem;
-  transition: color var(--duration-micro) var(--ease-micro), border-color var(--duration-micro) var(--ease-micro), scale var(--duration-micro) var(--ease-micro);
+  transition: color var(--duration-micro) var(--ease-micro), transform var(--duration-micro) var(--ease-micro);
 }
 
-.contact-panel__secondary:hover {
+.contact-panel__social-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.contact-panel__social:hover {
   color: var(--text-primary);
-  border-color: rgba(125, 211, 192, 0.5);
+  transform: translateY(-1px);
 }
 
-.contact-panel__secondary:focus-visible {
+.contact-panel__social:hover .contact-panel__social-icon {
+  opacity: 1;
+  color: var(--site-accent);
+}
+
+.contact-panel__social:focus-visible {
   outline: 2px solid var(--site-accent);
   outline-offset: 3px;
   color: var(--text-primary);
+  border-radius: 0.25rem;
 }
 
 /* ---- Site footer ---- */
@@ -1894,33 +1917,6 @@ html.route-lab .neural-bg {
 
   .hero-title {
     font-size: clamp(3.25rem, 5.2vw, 7.5rem);
-  }
-
-  .contact-panel {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "lead actions"
-      "copy actions";
-    column-gap: var(--space-2xl);
-    row-gap: var(--space-md);
-    align-items: start;
-  }
-
-  .contact-panel__lead {
-    grid-area: lead;
-  }
-
-  .contact-panel__copy {
-    grid-area: copy;
-  }
-
-  .contact-panel__actions {
-    grid-area: actions;
-    align-self: center;
-    align-items: flex-end;
-    margin-top: 0;
-    min-width: 14rem;
   }
 
   .work-featured__row {

@@ -19,6 +19,14 @@ export function SiteFooter() {
             GitHub
           </a>
           <a
+            href={SITE.tensortonic}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="site-footer__link font-mono pointer-events-auto"
+          >
+            TensorTonic
+          </a>
+          <a
             href={SITE.linkedin}
             target="_blank"
             rel="noopener noreferrer"

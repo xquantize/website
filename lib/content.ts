@@ -13,6 +13,7 @@ export const SITE = {
   github: "https://github.com/xquantize",
   linkedin: "https://www.linkedin.com/in/zane-neave-rex",
   orcid: "https://orcid.org/0009-0005-1559-1426",
+  tensortonic: "https://www.tensortonic.com/profile/xquantize",
   availability: "Open to contracting",
   accent: "#7dd3c0",
   aboutHeading: "Applied ML across vision, language, and production.",
