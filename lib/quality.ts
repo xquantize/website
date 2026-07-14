@@ -29,17 +29,12 @@ export function useQualityTier(): QualityTier {
   return tier;
 }
 
+/** Device-tier knobs for the neural background (WebGL + fallback). */
 export const QUALITY = {
-  particles: { high: 280, medium: 180, low: 100 } as const,
-  sparkles: { high: 60, medium: 0, low: 0 } as const,
-  fishSchools: { high: 3, medium: 2, low: 1 } as const,
-  fishCounts: {
-    high: [20, 18, 12],
-    medium: [16, 12],
-    low: [14],
-  } as const,
   dpr: { high: 1.5, medium: 1.25, low: 1 } as const,
   bloom: { high: true, medium: true, low: false } as const,
-  causticsCanvas: { high: true, medium: false, low: false } as const,
-  heroNetworkGraph: { high: true, medium: true, low: false } as const,
-};
+  /** WebGL neural field — low uses Canvas2D fallback instead */
+  neuralWebGL: { high: true, medium: true, low: false } as const,
+  /** Activation waves / glow (WebGL) */
+  neuralWaves: { high: true, medium: true, low: false } as const,
+} as const;

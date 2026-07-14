@@ -1,37 +1,46 @@
 import { SCENE } from "./constants";
 
+/**
+ * Scroll-driven atmosphere for the neural background.
+ * Density / pulse energy rise with scrollDepth ("deeper into the network").
+ */
 export type ScrollAtmosphere = {
   cameraZ: number;
-  particleOpacity: number;
-  particleSpeed: number;
+  /** World-space Y the camera tracks — moves down the stack on scroll */
+  travelY: number;
+  /** 0–1 network density (edge visibility + brightness) */
+  networkDensity: number;
+  /** Relative pulse spawn energy 0–1 */
+  pulseEnergy: number;
+  nodeOpacity: number;
+  edgeOpacity: number;
   bloomIntensity: number;
-  waterHue: number;
-  waterBright: number;
+  /** Background brightness multiplier */
+  bgBright: number;
   vignetteStrength: number;
   scrollDepth: number;
   heroOpacity: number;
-  fishOpacity: number;
-  fishSpeed: number;
   pageScroll: number;
   fogDensity: number;
-  causticStrength: number;
+  /** Subtle drift amplitude multiplier */
+  driftAmount: number;
 };
 
 const DEFAULTS: ScrollAtmosphere = {
   cameraZ: SCENE.cameraZ,
-  particleOpacity: 0.55,
-  particleSpeed: 1,
-  bloomIntensity: 0.4,
-  waterHue: 0,
-  waterBright: 1,
+  travelY: SCENE.travelYStart,
+  networkDensity: 0.35,
+  pulseEnergy: 0.25,
+  nodeOpacity: 0.72,
+  edgeOpacity: 0.28,
+  bloomIntensity: 0.28,
+  bgBright: 1,
   vignetteStrength: 0.38,
   scrollDepth: 0,
   heroOpacity: 1,
-  fishOpacity: 0.88,
-  fishSpeed: 1,
   pageScroll: 0,
-  fogDensity: 0.032,
-  causticStrength: 0.82,
+  fogDensity: 0.028,
+  driftAmount: 0.55,
 };
 
 export const scrollAtmosphere: ScrollAtmosphere = { ...DEFAULTS };
@@ -42,13 +51,10 @@ export function resetScrollAtmosphere() {
 
 export function applyAtmosphereToDom() {
   const root = document.documentElement;
-  root.style.setProperty("--atmosphere-hue", `${scrollAtmosphere.waterHue}deg`);
-  root.style.setProperty("--atmosphere-bright", `${scrollAtmosphere.waterBright}`);
-  root.style.setProperty(
-    "--vignette-strength",
-    `${scrollAtmosphere.vignetteStrength}`,
-  );
+  root.style.setProperty("--atmosphere-bright", `${scrollAtmosphere.bgBright}`);
+  root.style.setProperty("--vignette-strength", `${scrollAtmosphere.vignetteStrength}`);
   root.style.setProperty("--scroll-depth", `${scrollAtmosphere.scrollDepth}`);
   root.style.setProperty("--hero-opacity", `${scrollAtmosphere.heroOpacity}`);
-  root.style.setProperty("--caustic-strength", `${scrollAtmosphere.causticStrength}`);
+  root.style.setProperty("--network-density", `${scrollAtmosphere.networkDensity}`);
+  root.style.setProperty("--network-pulse", `${scrollAtmosphere.pulseEnergy}`);
 }

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { EASE, MOTION } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -36,11 +37,11 @@ export function ScrollReveal({
       mode === "scrub"
         ? gsap.fromTo(
             el,
-            { opacity: 0, y: 20 },
+            { opacity: 0, y: MOTION.revealY },
             {
               opacity: 1,
               y: 0,
-              ease: "power2.out",
+              ease: EASE.enter,
               scrollTrigger: {
                 trigger: el,
                 start: "top 92%",
@@ -52,16 +53,16 @@ export function ScrollReveal({
           )
         : gsap.fromTo(
             el,
-            { opacity: 0, y: 20 },
+            { opacity: 0, y: MOTION.revealY },
             {
               opacity: 1,
               y: 0,
-              duration: 0.75,
+              duration: MOTION.revealDuration,
               delay,
-              ease: "power2.out",
+              ease: EASE.enter,
               scrollTrigger: {
                 trigger: el,
-                start: "top 90%",
+                start: MOTION.revealStart,
                 once: true,
                 invalidateOnRefresh: true,
               },

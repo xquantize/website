@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SCENE } from "@/lib/constants";
+import { EASE } from "@/lib/motion";
 import {
   applyAtmosphereToDom,
   resetScrollAtmosphere,
@@ -23,7 +25,7 @@ export function ScrollAtmosphere() {
           trigger: ".home-page",
           start: "top top",
           end: "bottom bottom",
-          scrub: 1.6,
+          scrub: 1.2,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             scrollAtmosphere.pageScroll = self.progress;
@@ -32,86 +34,86 @@ export function ScrollAtmosphere() {
         },
       });
 
-      // Surface → descent: hero fades, mood builds
+      // Surface → enter the top of the stack
       tl.to(scrollAtmosphere, {
-        cameraZ: 6.8,
-        particleOpacity: 0.44,
-        particleSpeed: 0.78,
-        bloomIntensity: 0.32,
-        waterHue: 3,
-        waterBright: 0.94,
-        vignetteStrength: 0.44,
-        scrollDepth: 0.12,
+        cameraZ: 17.2,
+        travelY: SCENE.travelYStart - 1.1,
+        networkDensity: 0.48,
+        pulseEnergy: 0.45,
+        nodeOpacity: 0.78,
+        edgeOpacity: 0.22,
+        bloomIntensity: 0.3,
+        bgBright: 0.96,
+        vignetteStrength: 0.42,
+        scrollDepth: 0.18,
         heroOpacity: 0,
-        fishOpacity: 0.82,
-        fishSpeed: 0.88,
-        fogDensity: 0.038,
-        causticStrength: 0.72,
-        ease: "none",
+        fogDensity: 0.02,
+        driftAmount: 0.62,
+        ease: EASE.none,
       })
-        // Work: brightest band — peak readability
+        // Work: mid-upper layers
         .to(scrollAtmosphere, {
-          cameraZ: 5.8,
-          particleOpacity: 0.48,
-          particleSpeed: 0.62,
-          bloomIntensity: 0.36,
-          waterHue: 5,
-          waterBright: 1.04,
-          vignetteStrength: 0.34,
-          scrollDepth: 0.22,
-          fishOpacity: 0.92,
-          fishSpeed: 0.72,
-          fogDensity: 0.024,
-          causticStrength: 0.48,
-          ease: "none",
-        })
-        // About: still sunlit — hue shifts, stays open
-        .to(scrollAtmosphere, {
-          cameraZ: 6.4,
-          particleOpacity: 0.42,
-          particleSpeed: 0.52,
-          bloomIntensity: 0.33,
-          waterHue: 10,
-          waterBright: 1.02,
+          cameraZ: 16.4,
+          travelY: 1.4,
+          networkDensity: 0.68,
+          pulseEnergy: 0.62,
+          nodeOpacity: 0.88,
+          edgeOpacity: 0.28,
+          bloomIntensity: 0.32,
+          bgBright: 1.02,
           vignetteStrength: 0.36,
           scrollDepth: 0.32,
-          fishOpacity: 0.88,
-          fishSpeed: 0.58,
+          fogDensity: 0.016,
+          driftAmount: 0.7,
+          ease: EASE.none,
+        })
+        // About: mid stack — training denser
+        .to(scrollAtmosphere, {
+          cameraZ: 15.8,
+          travelY: -0.2,
+          networkDensity: 0.78,
+          pulseEnergy: 0.78,
+          nodeOpacity: 0.9,
+          edgeOpacity: 0.32,
+          bloomIntensity: 0.34,
+          bgBright: 0.98,
+          vignetteStrength: 0.4,
+          scrollDepth: 0.48,
+          fogDensity: 0.018,
+          driftAmount: 0.78,
+          ease: EASE.none,
+        })
+        // Contact: lower layers
+        .to(scrollAtmosphere, {
+          cameraZ: 15.2,
+          travelY: -2.2,
+          networkDensity: 0.92,
+          pulseEnergy: 0.92,
+          nodeOpacity: 0.95,
+          edgeOpacity: 0.38,
+          bloomIntensity: 0.36,
+          bgBright: 0.9,
+          vignetteStrength: 0.5,
+          scrollDepth: 0.72,
+          fogDensity: 0.022,
+          driftAmount: 0.85,
+          ease: EASE.none,
+        })
+        // Footer: deepest
+        .to(scrollAtmosphere, {
+          cameraZ: 14.6,
+          travelY: SCENE.travelYEnd,
+          networkDensity: 1,
+          pulseEnergy: 1,
+          nodeOpacity: 1,
+          edgeOpacity: 0.42,
+          bloomIntensity: 0.3,
+          bgBright: 0.86,
+          vignetteStrength: 0.58,
+          scrollDepth: 0.9,
           fogDensity: 0.026,
-          causticStrength: 0.38,
-          ease: "none",
-        })
-        // Contact: twilight, not abyss
-        .to(scrollAtmosphere, {
-          cameraZ: 8.2,
-          particleOpacity: 0.28,
-          particleSpeed: 0.38,
-          bloomIntensity: 0.24,
-          waterHue: 12,
-          waterBright: 0.94,
-          vignetteStrength: 0.48,
-          scrollDepth: 0.44,
-          fishOpacity: 0.72,
-          fishSpeed: 0.42,
-          fogDensity: 0.048,
-          causticStrength: 0.18,
-          ease: "none",
-        })
-        // Footer: dusk — moody but capped
-        .to(scrollAtmosphere, {
-          cameraZ: 9.4,
-          particleOpacity: 0.2,
-          particleSpeed: 0.28,
-          bloomIntensity: 0.18,
-          waterHue: 8,
-          waterBright: 0.9,
-          vignetteStrength: 0.56,
-          scrollDepth: 0.52,
-          fishOpacity: 0.58,
-          fishSpeed: 0.3,
-          fogDensity: 0.062,
-          causticStrength: 0.1,
-          ease: "none",
+          driftAmount: 0.9,
+          ease: EASE.none,
         });
     });
 

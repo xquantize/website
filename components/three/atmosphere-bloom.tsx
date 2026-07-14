@@ -6,8 +6,8 @@ import { Bloom } from "@react-three/postprocessing";
 import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 
 export function AtmosphereBloom() {
-  const [intensity, setIntensity] = useState(0.4);
-  const current = useRef(0.4);
+  const [intensity, setIntensity] = useState(0.28);
+  const current = useRef(0.28);
   const last = useRef(0);
 
   useFrame(({ clock }) => {

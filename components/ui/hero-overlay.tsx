@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { HERO_LINES, SITE } from "@/lib/content";
+import { EASE, MOTION } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -26,8 +27,8 @@ export function HeroOverlay() {
         {
           yPercent: 120,
           opacity: 0,
-          stagger: 0.08,
-          ease: "none",
+          stagger: MOTION.heroScrubStagger,
+          ease: EASE.none,
           scrollTrigger: {
             trigger: hero,
             start: "top top",
@@ -44,7 +45,7 @@ export function HeroOverlay() {
         {
           scale: 0.98,
           y: 16,
-          ease: "none",
+          ease: EASE.none,
           scrollTrigger: {
             trigger: hero,
             start: "top top",
