@@ -35,6 +35,7 @@ export function SiteBackground({ scrollAtmosphere = false, scene = "full" }: Pro
   }, []);
 
   // Confined WebGL column is desktop-only; below 1024px use Canvas2D fallback.
+  // Project / static pages keep only the quiet gradient — no network diagram.
   const showWebGL =
     scene === "full" &&
     desktopColumn &&
@@ -42,10 +43,10 @@ export function SiteBackground({ scrollAtmosphere = false, scene = "full" }: Pro
     !nativeScroll &&
     QUALITY.neuralWebGL[tier];
 
-  const showFallback = !showWebGL;
+  const showFallback = scene === "full" && !showWebGL;
   const runScrollAtmosphere = Boolean(scrollAtmosphere) && scene === "full";
   const vignetteClass = scene === "static" ? "vignette vignette--page" : "vignette";
-  const fallbackAmbient = scene === "static" || reducedMotion || !scrollAtmosphere;
+  const fallbackAmbient = reducedMotion || !scrollAtmosphere;
 
   // Portal fixed layers to <body>. `.page-enter` keeps an identity transform after its
   // animation, which makes position:fixed descendants scroll with the document.
