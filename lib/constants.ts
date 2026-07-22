@@ -1,7 +1,7 @@
 export const COLORS = {
-  bg: "#081420",
-  text: "#f5f0e8",
-  accent: "#7dd3c0",
+  bg: "#0c0f12",
+  text: "#ebe6dc",
+  accent: "#c4a484",
 } as const;
 
 export const SCENE = {

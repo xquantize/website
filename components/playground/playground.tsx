@@ -37,7 +37,7 @@ type Props = {
   accent?: string;
 };
 
-export function Playground({ accent = "#7dd3c0" }: Props) {
+export function Playground({ accent = "#c4a484" }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState(480);
   const [hiddenSizes, setHiddenSizes] = useState<number[]>([5, 4]);

@@ -31,8 +31,8 @@ export function renderOgImage({
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          background: "linear-gradient(160deg, #0c2a3a 0%, #081420 55%, #050c14 100%)",
-          color: "#f5f0e8",
+          background: "linear-gradient(160deg, #1a1612 0%, #0c0f12 55%, #08090b 100%)",
+          color: "#ebe6dc",
         }}
       >
         <div

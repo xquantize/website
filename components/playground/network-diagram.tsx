@@ -107,7 +107,7 @@ export function NetworkDiagram({ snapshot, running, width = 480 }: Props) {
                   className="lab-network__edge"
                   stroke={
                     w >= 0
-                      ? "var(--project-accent, #7dd3c0)"
+                      ? "var(--project-accent, #c4a484)"
                       : "rgba(100, 180, 200, 0.85)"
                   }
                   strokeOpacity={0.04 + mag * 0.42}
@@ -129,7 +129,7 @@ export function NetworkDiagram({ snapshot, running, width = 480 }: Props) {
                   cy={p.y}
                   r={NODE_R + (l === snapshot.activations.length - 1 ? 1.5 : 0)}
                   fill={activationFill(act)}
-                  stroke="rgba(245, 240, 232, 0.35)"
+                  stroke="rgba(235, 230, 220, 0.35)"
                   strokeWidth={0.8 + (running ? biasGrad * 2.5 : 0)}
                 />
               </g>

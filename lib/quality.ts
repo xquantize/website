@@ -20,7 +20,13 @@ export function useQualityTier(): QualityTier {
   const [tier, setTier] = useState<QualityTier>("high");
 
   useEffect(() => {
-    const sync = () => setTier(detectQualityTier());
+    const sync = () => {
+      const next = detectQualityTier();
+      setTier(next);
+      document.documentElement.classList.toggle("quality-low", next === "low");
+      document.documentElement.classList.toggle("quality-medium", next === "medium");
+      document.documentElement.classList.toggle("quality-high", next === "high");
+    };
     sync();
     window.addEventListener("resize", sync, { passive: true });
     return () => window.removeEventListener("resize", sync);

@@ -1,8 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { HeroScene } from "@/components/three/hero-scene";
 import { ScrollAtmosphere } from "@/components/scroll-atmosphere";
 import { NeuralFallback } from "@/components/ui/neural-fallback";
 import { QUALITY, useQualityTier } from "@/lib/quality";
@@ -14,6 +14,12 @@ type Props = {
 };
 
 const DESKTOP_NEURAL_MQ = "(min-width: 1024px)";
+
+/** WebGL hero — loaded only when desktop quality gates pass (not on static/mobile). */
+const HeroScene = dynamic(
+  () => import("@/components/three/hero-scene").then((m) => m.HeroScene),
+  { ssr: false },
+);
 
 export function SiteBackground({ scrollAtmosphere = false, scene = "full" }: Props) {
   const reducedMotion = usePrefersReducedMotion();

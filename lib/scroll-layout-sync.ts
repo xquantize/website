@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { resolveSectionScrollTarget, sectionScrollOffset } from "@/lib/section-scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -83,18 +84,19 @@ export function syncScrollLayout(detail: ScrollLayoutSyncDetail = {}) {
   };
 
   if (hashTarget) {
+    const target = resolveSectionScrollTarget(hashTarget);
     if (lenisRef) {
-      lenisRef.scrollTo(hashTarget, {
-        offset: 0,
-        duration: 0.85,
+      lenisRef.scrollTo(target, {
+        offset: sectionScrollOffset(hashTarget.id === "hero" ? hashTarget : target),
+        duration: 1.25,
         onComplete: finish,
       });
       // Safety if onComplete is skipped (interrupted scroll, etc.)
-      window.setTimeout(finish, 1100);
+      window.setTimeout(finish, 1500);
       return;
     }
 
-    hashTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(finish, 500);
     return;
   }

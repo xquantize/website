@@ -3,9 +3,10 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
+import { scrollToSectionElement } from "@/lib/section-scroll";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
 
-const SECTION_IDS = ["hero", "work", "about", "contact"] as const;
+const SECTION_IDS = ["hero", "bio", "experience", "demos", "contact"] as const;
 
 function isTypingTarget(el: EventTarget | null) {
   if (!(el instanceof HTMLElement)) return false;
@@ -24,11 +25,8 @@ export function SectionKeyboardNav() {
     const scrollToId = (id: string) => {
       const el = document.getElementById(id);
       if (!el) return;
-      if (lenis) {
-        lenis.scrollTo(el, { offset: 0, duration: 1.4 });
-      } else {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
+      scrollToSectionElement(el, { lenis, duration: 1.45 });
+      window.history.pushState(null, "", `/#${id}`);
     };
 
     const currentIndex = () => {

@@ -10,13 +10,22 @@ import {
   useMotionOverrideLabel,
   usePrefersReducedMotion,
 } from "@/lib/motion-preference";
+import { scrollToSectionElement } from "@/lib/section-scroll";
 
 const SECTIONS = [
   { id: "hero", label: "Surface", hint: "Home hero" },
-  { id: "work", label: "Work", hint: "Featured projects" },
-  { id: "about", label: "About", hint: "Bio & capabilities" },
-  { id: "contact", label: "Contact", hint: "Get in touch" },
+  { id: "bio", label: "Bio", hint: "About me" },
+  { id: "experience", label: "Experience", hint: "Roles & focus" },
+  { id: "demos", label: "Demos", hint: "Interactive projects" },
+  { id: "contact", label: "Contact", hint: "Contracting / email" },
 ] as const;
+
+/** Set before the palette module mounts so the first ⌘K still opens. */
+let pendingOpen = false;
+
+export function requestCommandPaletteOpen() {
+  pendingOpen = true;
+}
 
 function isTypingTarget(el: EventTarget | null) {
   if (!(el instanceof HTMLElement)) return false;
@@ -25,12 +34,22 @@ function isTypingTarget(el: EventTarget | null) {
 }
 
 export function CommandPalette() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => {
+    if (pendingOpen) {
+      pendingOpen = false;
+      return true;
+    }
+    return false;
+  });
   const pathname = usePathname();
   const router = useRouter();
   const lenis = useLenis();
   const reducedMotion = usePrefersReducedMotion();
   const motionLabel = useMotionOverrideLabel();
+
+  useEffect(() => {
+    if (open) document.body.dataset.commandOpen = "true";
+  }, [open]);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -50,11 +69,11 @@ export function CommandPalette() {
       const go = () => {
         const el = document.getElementById(id);
         if (!el) return;
-        if (lenis) {
-          lenis.scrollTo(el, { offset: 0, duration: reducedMotion ? 0 : 1.2 });
-        } else {
-          el.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
-        }
+        scrollToSectionElement(el, {
+          lenis,
+          duration: reducedMotion ? 0 : 1.4,
+          immediate: reducedMotion,
+        });
       };
 
       if (pathname !== "/") {

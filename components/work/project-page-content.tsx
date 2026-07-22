@@ -40,6 +40,7 @@ export function ProjectPageContent({ project }: { project: Project }) {
 
   return (
     <main
+      id="main-content"
       className={`project-page${project.kind === "playground" ? " project-page--lab" : ""}`}
       style={style}
     >
@@ -50,25 +51,24 @@ export function ProjectPageContent({ project }: { project: Project }) {
           {project.id} · {project.status}
         </p>
         <h1
-          className="font-serif italic font-light tracking-tight leading-[1.05] mb-4"
-          style={{ fontSize: "clamp(2.4rem, 5.5vw, 4rem)" }}
+          className="project-page__title font-serif italic font-light tracking-tight leading-[1.05]"
         >
-          {project.hook}
+          {project.title}
         </h1>
-        <p className="project-page__subtitle">{project.title}</p>
+        <p className="project-page__hook font-serif italic">{project.hook}</p>
       </header>
 
       {project.kind === "playground" ? (
         <>
-          <div className="project-page__lab">
-            <PlaygroundForProject project={project} />
-          </div>
           {project.intro && (
-            <div className="project-page__prose">
-              <p className="project-page__prose-label font-mono">What you&apos;re seeing</p>
+            <div className="project-page__prose project-page__prose--lead">
+              <p className="project-page__prose-label font-mono">Try this</p>
               <p className="project-page__intro">{project.intro}</p>
             </div>
           )}
+          <div className="project-page__lab">
+            <PlaygroundForProject project={project} />
+          </div>
         </>
       ) : (
         <div className="project-case">
@@ -76,6 +76,18 @@ export function ProjectPageContent({ project }: { project: Project }) {
             <p className="project-case__label font-mono">Problem</p>
             <p className="project-case__text">{project.problem ?? project.description}</p>
           </section>
+          {project.approach && (
+            <section className="project-case__block">
+              <p className="project-case__label font-mono">Approach</p>
+              <p className="project-case__text">{project.approach}</p>
+            </section>
+          )}
+          {project.results && (
+            <section className="project-case__block">
+              <p className="project-case__label font-mono">Use when</p>
+              <p className="project-case__text">{project.results}</p>
+            </section>
+          )}
           <section className="project-case__block">
             <p className="project-case__label font-mono">Stack</p>
             <ul className="project-case__tags">
@@ -86,7 +98,32 @@ export function ProjectPageContent({ project }: { project: Project }) {
               ))}
             </ul>
           </section>
-          <p className="project-case__footnote font-mono">Case study forthcoming.</p>
+          {project.repoUrl || project.demoUrl ? (
+            <div className="project-case__actions">
+              {project.repoUrl && (
+                <a
+                  href={project.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-case__cta font-mono"
+                >
+                  View on GitHub →
+                </a>
+              )}
+              {project.demoUrl && (
+                <a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-case__cta font-mono"
+                >
+                  Live demo →
+                </a>
+              )}
+            </div>
+          ) : (
+            <p className="project-case__footnote font-mono">Case study forthcoming.</p>
+          )}
         </div>
       )}
 

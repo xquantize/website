@@ -13,6 +13,7 @@ import {
   combinedLayerGlow,
 } from "@/lib/neural-field";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
+import { pointer, ensurePointerListener } from "@/lib/pointer";
 import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 import { getScrollProgress } from "@/lib/scroll-layout-sync";
 
@@ -21,9 +22,11 @@ type Props = {
   ambient?: boolean;
 };
 
+const IDLE_MS = 900;
+
 /**
  * Low-cost Canvas2D layered network for mobile / low tier / reduced-motion.
- * Capped ~30fps ambient / ~45fps scroll-linked to keep the main thread free.
+ * Caps FPS, pauses when the tab is hidden or the page is idle.
  */
 export function NeuralFallback({ ambient = true }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,6 +37,8 @@ export function NeuralFallback({ ambient = true }: Props) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
     if (!ctx) return;
+
+    ensurePointerListener();
 
     const network = createLayeredNetwork(NEURAL_FALLBACK, 91, true);
     const {
@@ -58,7 +63,16 @@ export function NeuralFallback({ ambient = true }: Props) {
     const pts = nodes.map(() => ({ x: 0, y: 0, layer: 0 }));
     const layerGlowCache = new Float32Array(layerCount);
     const edgeGlowCache = new Float32Array(edges.length);
-    const frameBudget = ambient ? 1000 / 30 : 1000 / 45;
+
+    const coarse =
+      typeof window !== "undefined" &&
+      window.matchMedia("(pointer: coarse)").matches;
+    // Ambient / coarse: cheaper; scroll-linked desktop fallback: a bit smoother
+    const frameBudget = ambient
+      ? 1000 / 24
+      : coarse
+        ? 1000 / 22
+        : 1000 / 45;
 
     let spawnTimer = 1.0;
     let raf = 0;
@@ -68,6 +82,11 @@ export function NeuralFallback({ ambient = true }: Props) {
     let h = 0;
     let dpr = 1;
     let visible = true;
+    let running = true;
+    let lastActivity = performance.now();
+    let lastScroll = getScrollProgress();
+    let lastPx = pointer.x;
+    let lastPy = pointer.y;
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 1.25);
@@ -81,16 +100,6 @@ export function NeuralFallback({ ambient = true }: Props) {
     };
     resize();
     window.addEventListener("resize", resize, { passive: true });
-
-    const onVisibility = () => {
-      visible = !document.hidden;
-      if (visible) {
-        last = performance.now();
-        acc = 0;
-        raf = requestAnimationFrame(tick);
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibility);
 
     const drawNetwork = (
       time: number,
@@ -136,7 +145,7 @@ export function NeuralFallback({ ambient = true }: Props) {
         ctx.strokeStyle =
           e.sign < 0
             ? `rgba(90, 130, 140, ${alpha * 0.65})`
-            : `rgba(125, 211, 192, ${alpha})`;
+            : `rgba(196, 164, 132, ${alpha})`;
         ctx.lineWidth = 0.3 + e.weight * 0.7 + glow * 0.8;
         ctx.beginPath();
         ctx.moveTo(pts[e.a].x, pts[e.a].y);
@@ -161,7 +170,7 @@ export function NeuralFallback({ ambient = true }: Props) {
       ctx.font = "600 10px ui-monospace, SFMono-Regular, Menlo, monospace";
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = "rgba(125, 211, 192, 0.28)";
+      ctx.fillStyle = "rgba(196, 164, 132, 0.28)";
       for (let L = 0; L < layerCount; L++) {
         let minX = Infinity;
         let ySum = 0;
@@ -184,8 +193,7 @@ export function NeuralFallback({ ambient = true }: Props) {
         const r = (1.35 + glow * 2.8) * (isDropped ? 0.55 : 1);
         const alpha =
           (0.16 + density * 0.14 + glow * 0.45) * (isDropped ? 0.25 : 1);
-        // Solid soft disc — cheaper than fresh radial gradients every neuron
-        ctx.fillStyle = `rgba(125, 211, 192, ${alpha * 0.55})`;
+        ctx.fillStyle = `rgba(196, 164, 132, ${alpha * 0.55})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, r * 2.0, 0, Math.PI * 2);
         ctx.fill();
@@ -208,12 +216,54 @@ export function NeuralFallback({ ambient = true }: Props) {
       );
       return () => {
         window.removeEventListener("resize", resize);
-        document.removeEventListener("visibilitychange", onVisibility);
       };
     }
 
+    const wake = () => {
+      lastActivity = performance.now();
+      if (!running && visible) {
+        running = true;
+        last = performance.now();
+        acc = 0;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+
+    const onVisibility = () => {
+      visible = !document.hidden;
+      if (visible) {
+        wake();
+      } else {
+        running = false;
+        cancelAnimationFrame(raf);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    const activityOpts: AddEventListenerOptions = { passive: true };
+    window.addEventListener("pointermove", wake, activityOpts);
+    window.addEventListener("pointerdown", wake, activityOpts);
+    window.addEventListener("wheel", wake, activityOpts);
+    window.addEventListener("touchstart", wake, activityOpts);
+    window.addEventListener("scroll", wake, activityOpts);
+
     const tick = (now: number) => {
-      if (!visible) return;
+      if (!visible || !running) return;
+
+      const scroll = getScrollProgress();
+      const ptrMoved =
+        Math.abs(pointer.x - lastPx) > 2 || Math.abs(pointer.y - lastPy) > 2;
+      if (Math.abs(scroll - lastScroll) > 0.0005 || ptrMoved) {
+        lastActivity = now;
+        lastScroll = scroll;
+        lastPx = pointer.x;
+        lastPy = pointer.y;
+      } else if (!ambient && now - lastActivity > IDLE_MS) {
+        // Freeze scroll-linked fallback when idle — restart via wake listeners
+        running = false;
+        return;
+      }
+
       const rawDt = now - last;
       last = now;
       acc += rawDt;
@@ -228,7 +278,7 @@ export function NeuralFallback({ ambient = true }: Props) {
       const density = ambient ? 0.32 : scrollAtmosphere.networkDensity;
       const pulseEnergy = ambient ? 0.22 : scrollAtmosphere.pulseEnergy * 0.65;
       const amp = ambient ? 0.004 : 0.003 + scrollAtmosphere.driftAmount * 0.005;
-      const travel = ambient ? 0.5 : getScrollProgress();
+      const travel = ambient ? 0.5 : scroll;
 
       spawnTimer -= dt;
       const interval =
@@ -266,9 +316,15 @@ export function NeuralFallback({ ambient = true }: Props) {
     raf = requestAnimationFrame(tick);
 
     return () => {
+      running = false;
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pointermove", wake);
+      window.removeEventListener("pointerdown", wake);
+      window.removeEventListener("wheel", wake);
+      window.removeEventListener("touchstart", wake);
+      window.removeEventListener("scroll", wake);
     };
   }, [ambient, reducedMotion]);
 

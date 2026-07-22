@@ -9,27 +9,32 @@ import { SITE } from "@/lib/content";
 
 export function ContactSection() {
   return (
-    <section id="contact" className="content-section">
+    <section
+      id="contact"
+      className="content-section"
+      data-chapter="04"
+      data-chapter-label="Contact"
+    >
       <ReadingPool>
         <ScrollReveal mode="once">
-          <div className="section-stack">
-            <header className="section-header">
+          <div className="section-stack section-stack--wide">
+            <header className="section-header" data-section-anchor>
               <div className="section-divider" />
               <p className="section-kicker font-mono">Contact</p>
               <h2 className="section-title font-serif italic font-light tracking-tight">
-                Let&apos;s talk.
+                {SITE.contactHeading}
               </h2>
             </header>
 
-            <div className="contact-panel pointer-events-auto">
-              <p className="contact-panel__lead">{SITE.availability}</p>
-              <p className="contact-panel__copy">
-                Reach out by email — happy to discuss ML work, contracting, or a live walkthrough
-                of the demo.
-              </p>
-              <div className="contact-panel__actions">
+            <div className="contact-layout pointer-events-auto">
+              <div className="contact-layout__copy">
+                <p className="contact-panel__lead">{SITE.contactLead}</p>
+                <p className="contact-panel__copy">{SITE.contactCopy}</p>
+              </div>
+              <div className="contact-layout__actions">
                 <a href={`mailto:${SITE.email}`} className="contact-panel__primary">
-                  {SITE.email}
+                  {SITE.contactCta}
+                  <span className="contact-panel__email font-mono">{SITE.email}</span>
                 </a>
                 <div className="contact-panel__socials" aria-label="Profiles">
                   <a
@@ -42,15 +47,6 @@ export function ContactSection() {
                     <span>GitHub</span>
                   </a>
                   <a
-                    href={SITE.tensortonic}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="contact-panel__social font-mono"
-                  >
-                    <TensorTonicIcon className="contact-panel__social-icon" />
-                    <span>TensorTonic</span>
-                  </a>
-                  <a
                     href={SITE.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -58,6 +54,15 @@ export function ContactSection() {
                   >
                     <LinkedInIcon className="contact-panel__social-icon" />
                     <span>LinkedIn</span>
+                  </a>
+                  <a
+                    href={SITE.tensortonic}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="contact-panel__social font-mono"
+                  >
+                    <TensorTonicIcon className="contact-panel__social-icon" />
+                    <span>TensorTonic</span>
                   </a>
                 </div>
               </div>

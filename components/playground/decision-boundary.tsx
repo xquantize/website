@@ -22,7 +22,7 @@ export function DecisionBoundary({
   tick,
   size = 480,
   probe = { x: 0, y: 0 },
-  accent = "#7dd3c0",
+  accent = "#c4a484",
   onProbe,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -79,7 +79,7 @@ export function DecisionBoundary({
     });
 
     // Zero decision boundary contour
-    ctx.strokeStyle = "rgba(245, 240, 232, 0.55)";
+    ctx.strokeStyle = "rgba(235, 230, 220, 0.55)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     for (let j = 0; j < GRID; j++) {
@@ -115,7 +115,7 @@ export function DecisionBoundary({
     ctx.stroke();
 
     // Grid
-    ctx.strokeStyle = "rgba(245, 240, 232, 0.05)";
+    ctx.strokeStyle = "rgba(235, 230, 220, 0.05)";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 6; i++) {
       const p = (i / 6) * size;
@@ -136,9 +136,9 @@ export function DecisionBoundary({
       ctx.beginPath();
       ctx.arc(px, py, 4, 0, Math.PI * 2);
       ctx.fillStyle =
-        s.label === 1 ? "rgba(245, 240, 232, 0.95)" : "rgba(80, 170, 190, 0.95)";
+        s.label === 1 ? "rgba(235, 230, 220, 0.95)" : "rgba(80, 170, 190, 0.95)";
       ctx.fill();
-      ctx.strokeStyle = "rgba(8, 20, 32, 0.7)";
+      ctx.strokeStyle = "rgba(12, 15, 18, 0.7)";
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -146,7 +146,7 @@ export function DecisionBoundary({
     // Probe crosshair
     const px = ((probe.x + VIEW) / (2 * VIEW)) * size;
     const py = ((-probe.y + VIEW) / (2 * VIEW)) * size;
-    ctx.strokeStyle = "rgba(245, 240, 232, 0.55)";
+    ctx.strokeStyle = "rgba(235, 230, 220, 0.55)";
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 4]);
     ctx.beginPath();

@@ -621,7 +621,7 @@ export function createLayerLabelTexture(
   ctx.font = "600 22px ui-monospace, SFMono-Regular, Menlo, monospace";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "rgba(125, 211, 192, 0.55)";
+  ctx.fillStyle = "rgba(196, 164, 132, 0.55)";
   ctx.fillText(label, canvas.width / 2, canvas.height / 2 + 1);
   return { canvas };
 }

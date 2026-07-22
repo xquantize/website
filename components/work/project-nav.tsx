@@ -10,14 +10,14 @@ export function ProjectNavTop() {
 
   return (
     <a
-      href="/#work"
+      href="/#demos"
       className="project-nav__back font-mono pointer-events-auto"
       onClick={(e) => {
         e.preventDefault();
-        router.push("/#work");
+        router.push("/#demos");
       }}
     >
-      ← All work
+      ← All demos
     </a>
   );
 }

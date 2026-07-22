@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLenis } from "lenis/react";
+import { usePathname, useRouter } from "next/navigation";
 import { NAV, SITE } from "@/lib/content";
+import { scrollToSectionElement } from "@/lib/section-scroll";
 
 function sectionHash(href: string) {
   const hash = href.split("#")[1];
@@ -10,6 +13,9 @@ function sectionHash(href: string) {
 
 export function SiteNav() {
   const [active, setActive] = useState("");
+  const pathname = usePathname();
+  const router = useRouter();
+  const lenis = useLenis();
 
   useEffect(() => {
     const sections = NAV.map((item) => document.querySelector(sectionHash(item.href))).filter(
@@ -32,12 +38,34 @@ export function SiteNav() {
 
     sections.forEach((section) => observer.observe(section!));
     return () => observer.disconnect();
-  }, []);
+  }, [pathname]);
+
+  const onSectionClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    const id = href.split("#")[1];
+    if (!id) return;
+
+    e.preventDefault();
+
+    if (pathname !== "/") {
+      router.push(href);
+      return;
+    }
+
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    scrollToSectionElement(el, { lenis, duration: 1.4 });
+    window.history.pushState(null, "", href);
+    setActive(`#${id}`);
+  };
 
   return (
     <nav className="site-nav" aria-label="Main">
       <a href="/" className="site-nav__brand pointer-events-auto">
-        {SITE.name.split(" ")[0]}
+        {SITE.name}
       </a>
       <ul className="site-nav__links">
         {NAV.map((item) => (
@@ -45,6 +73,7 @@ export function SiteNav() {
             <a
               href={item.href}
               className={active === sectionHash(item.href) ? "is-active" : undefined}
+              onClick={(e) => onSectionClick(e, item.href)}
             >
               {item.label}
             </a>

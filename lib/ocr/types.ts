@@ -56,7 +56,7 @@ export function isUncertainConfidence(score: number): boolean {
 }
 
 export const CONFIDENCE_COLORS: Record<ConfidenceLevel, string> = {
-  high: "#7dd3c0",
+  high: "#c4a484",
   medium: "#e8b86d",
   low: "#e08a7a",
 };

@@ -5,7 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollAtmosphere } from "@/lib/scroll-atmosphere";
 
-const FOG_COLOR = new THREE.Color("#081420");
+const FOG_COLOR = new THREE.Color("#0c0f12");
 
 export function SceneFog() {
   const { scene } = useThree();

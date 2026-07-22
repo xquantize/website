@@ -16,12 +16,12 @@ export const EASE = {
 
 export const MOTION = {
   /** ScrollReveal once-mode */
-  revealDuration: 0.75,
-  revealY: 20,
-  revealStart: "top 90%",
+  revealDuration: 1.05,
+  revealY: 32,
+  revealStart: "top 88%",
   /** Hero title line scrub stagger (scroll-linked, not entrance) */
   heroScrubStagger: 0.08,
   /** Hero CSS fade-up is intentionally softer/slower than ScrollReveal */
-  heroEntranceY: 8,
-  heroEntranceDuration: 0.75,
+  heroEntranceY: 10,
+  heroEntranceDuration: 0.9,
 } as const;

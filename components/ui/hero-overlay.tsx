@@ -3,15 +3,18 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useLenis } from "lenis/react";
 import { HERO_LINES, SITE } from "@/lib/content";
 import { EASE, MOTION } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/motion-preference";
+import { scrollToSectionElement } from "@/lib/section-scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function HeroOverlay() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const reducedMotion = usePrefersReducedMotion();
+  const lenis = useLenis();
 
   useEffect(() => {
     const title = titleRef.current;
@@ -60,6 +63,14 @@ export function HeroOverlay() {
     return () => ctx.revert();
   }, [reducedMotion]);
 
+  const goTo = (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    scrollToSectionElement(el, { lenis, duration: 1.45 });
+    window.history.pushState(null, "", `/#${id}`);
+  };
+
   return (
     <div className="overlay overlay--home">
       <div className="overlay__bar overlay__bar--top animate-fade-up">
@@ -92,20 +103,12 @@ export function HeroOverlay() {
 
           <p className="hero-tagline font-mono">{SITE.tagline}</p>
 
-          <ul className="pill-row" aria-label="Focus areas">
-            {SITE.capabilities.slice(0, 4).map((item) => (
-              <li key={item} className="pill font-mono">
-                {item}
-              </li>
-            ))}
-          </ul>
-
           <div className="hero-actions pointer-events-auto">
-            <a href="/#work" className="hero-cta" data-cursor="link">
-              View work
+            <a href="/#bio" className="hero-cta" data-cursor="link" onClick={goTo("bio")}>
+              About me
             </a>
-            <a href="/#contact" className="hero-link" data-cursor="link">
-              Get in touch
+            <a href="/#demos" className="hero-link" data-cursor="link" onClick={goTo("demos")}>
+              View demos
             </a>
           </div>
         </div>
@@ -113,7 +116,12 @@ export function HeroOverlay() {
 
       <div className="overlay__bar overlay__bar--bottom animate-fade-up" style={{ animationDelay: "0.6s" }}>
         <span className="hero-meta font-mono">{SITE.availability}</span>
-        <a href="/#work" className="hero-scroll font-mono pointer-events-auto" data-cursor="link">
+        <a
+          href="/#bio"
+          className="hero-scroll font-mono pointer-events-auto"
+          data-cursor="link"
+          onClick={goTo("bio")}
+        >
           <span>Scroll</span>
           <div className="hero-scroll__line" aria-hidden />
         </a>
